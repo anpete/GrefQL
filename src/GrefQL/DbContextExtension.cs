@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
 using GraphQL;
-using Microsoft.EntityFrameworkCore;
 
-namespace GrefQL
+// ReSharper disable InconsistentNaming
+
+// ReSharper disable once CheckNamespace
+
+namespace Microsoft.EntityFrameworkCore
 {
     public static class DbContextExtension
     {
         // TODO strong type query and variables
-        public static ExecutionResult FromGraphQLQuery(this DbContext context, string query, string variables)
+        public static ExecutionResult ExecuteGraphQLQuery(this DbContext context, string query, string variables)
             => new ExecutionResult
             {
                 Errors = new ExecutionErrors
@@ -17,7 +20,7 @@ namespace GrefQL
                 }
             };
 
-        public static Task<ExecutionResult> FromGraphQLQueryAsync(this DbContext context, string query, string variables)
-            => Task.FromResult(context.FromGraphQLQuery(query, variables));
+        public static Task<ExecutionResult> ExecuteGraphQLQueryAsync(this DbContext context, string query, string variables)
+            => Task.FromResult(context.ExecuteGraphQLQuery(query, variables));
     }
 }
