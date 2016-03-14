@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using GraphQL;
-using GrefQL.Tests.Model;
+using GraphQL.Http;
+using GrefQL.Tests.Model.Northwind;
 
 namespace GrefQL.WebTests
 {
@@ -16,7 +17,8 @@ namespace GrefQL.WebTests
         {
             services.AddLogging();
             services.AddEntityFramework()
-                .AddDbContext<StarWarsContext>();
+                .AddSqlServer()
+                .AddDbContext<NorthwindContext>();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
@@ -36,14 +38,17 @@ namespace GrefQL.WebTests
                             query = JsonConvert.DeserializeObject<GraphQLQuery>(await streamReader.ReadToEndAsync());
                         }
 
-                        ExecutionResult result;
-                        using (var db = app.ApplicationServices.GetRequiredService<StarWarsContext>())
+                        using (var db = app.ApplicationServices.GetRequiredService<NorthwindContext>())
                         {
-                            result = await db.FromGraphQLQueryAsync(query.Query, query.Variables);
-                        }
+                            var schema = new NorthwindGraph(db);
+                            var documentExecutor = new DocumentExecuter();
 
-                        context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
-                        await context.Response.WriteAsync(JsonConvert.SerializeObject(result));
+                            var result = await documentExecutor.ExecuteAsync(schema, null, query.Query, null);
+                            var jsonResult = new DocumentWriter().Write(result);
+
+                            context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
+                            await context.Response.WriteAsync(jsonResult);
+                        }
                     }
                 });
         }
