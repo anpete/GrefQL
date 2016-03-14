@@ -119,8 +119,8 @@
   <ItemGroup>
     <Compile Include="Model\Northwind\Customer.cs" />
     <Compile Include="Model\Northwind\NorthwindContext.cs" />
+    <Compile Include="Model\Northwind\NorthwindGraph.cs" />
     <Compile Include="Query.cs" />
-    <Compile Include="Model\StarWars.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestOutputHelperLoggerProvider.cs" />
   </ItemGroup>
@@ -129,9 +129,6 @@
       <Project>{f05095c3-a360-43e5-a246-fb5d6ca9c00b}</Project>
       <Name>GrefQL</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Model\StarWars.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
