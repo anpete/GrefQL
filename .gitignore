@@ -34,3 +34,5 @@ config.test.json
 .idea/
 *.sln.iml
 *.DotSettings
+node_modules/
+/**/wwwroot/bundle.js
