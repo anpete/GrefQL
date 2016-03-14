@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GraphQL, Version=0.5.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\GraphQL.0.5.1.0\lib\GraphQL.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.EntityFrameworkCore.1.0.0-rc2-20100\lib\net451\Microsoft.EntityFrameworkCore.dll</HintPath>
       <Private>True</Private>
@@ -113,9 +117,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Northwind\Customer.cs" />
+    <Compile Include="Model\Northwind\NorthwindContext.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Model\StarWars.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestOutputHelperLoggerProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\GrefQL\GrefQL.csproj">
