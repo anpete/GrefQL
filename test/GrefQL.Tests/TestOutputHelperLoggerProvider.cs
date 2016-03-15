@@ -34,7 +34,12 @@ namespace GrefQL.Tests
                 TState state,
                 Exception exception,
                 Func<TState, Exception, string> formatter)
-                => _testOutputHelper.WriteLine(formatter(state, exception));
+            {
+                if (logLevel == LogLevel.Information)
+                {
+                    _testOutputHelper.WriteLine(formatter(state, exception));
+                }
+            }
 
             public bool IsEnabled(LogLevel logLevel) => logLevel == LogLevel.Information;
 
