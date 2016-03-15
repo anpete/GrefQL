@@ -1,11 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using GraphQL.Types;
-using GrefQL.Metadata;
 using GrefQL.Query;
+using GrefQL.Schema;
 using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Xunit;
 
@@ -54,10 +52,10 @@ namespace GrefQL.Tests
             Assert.Equal(graphType.Fields.Count(), entityType.GetProperties().Count());
 
             var id = Assert.Single(graphType.Fields, f => f.Name == "customerId");
-            Assert.Equal(typeof(NonNullGraphType<StringGraphType>), id.Type);
+            Assert.Equal(typeof (NonNullGraphType<StringGraphType>), id.Type);
 
             var company = Assert.Single(graphType.Fields, f => f.Name == "companyName");
-            Assert.Equal(typeof(StringGraphType), company.Type);
+            Assert.Equal(typeof (StringGraphType), company.Type);
         }
     }
 }

@@ -2,7 +2,7 @@
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace GrefQL.Metadata
+namespace GrefQL.Schema
 {
     public interface IGraphTypeMapper
     {

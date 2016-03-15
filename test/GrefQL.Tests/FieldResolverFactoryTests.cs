@@ -16,7 +16,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -41,7 +41,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var orderDetailType = context.Model.FindEntityType(typeof(OrderDetail));
+                var orderDetailType = context.Model.FindEntityType(typeof (OrderDetail));
 
                 Assert.NotNull(orderDetailType);
 

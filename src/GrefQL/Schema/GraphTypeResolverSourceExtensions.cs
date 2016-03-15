@@ -1,7 +1,7 @@
 ﻿using System;
 using GraphQL.Types;
 
-namespace GrefQL.Metadata
+namespace GrefQL.Schema
 {
     public static class GraphTypeResolverSourceExtensions
     {

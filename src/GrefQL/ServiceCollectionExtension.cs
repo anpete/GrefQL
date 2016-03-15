@@ -1,6 +1,7 @@
 ﻿using GraphQL.Types;
 using GrefQL.Metadata;
 using GrefQL.Query;
+using GrefQL.Schema;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 // ReSharper disable once CheckNamespace

@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using GraphQL.Types;
 
-namespace GrefQL.Metadata
+namespace GrefQL.Schema
 {
     public class GraphTypeResolverSource : IGraphTypeResolverSource
     {

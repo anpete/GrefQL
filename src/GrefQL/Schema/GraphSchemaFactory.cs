@@ -5,7 +5,7 @@ using GraphQL.Types;
 using GrefQL.Query;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace GrefQL.Metadata
+namespace GrefQL.Schema
 {
     public class GraphSchemaFactory : IGraphSchemaFactory
     {
@@ -22,9 +22,9 @@ namespace GrefQL.Metadata
             _graphTypeResolverSource = graphTypeResolverSource;
         }
 
-        public Schema Create(IModel model)
+        public GraphQL.Types.Schema Create(IModel model)
         {
-            var schema = new Schema(_graphTypeResolverSource.Resolve);
+            var schema = new GraphQL.Types.Schema(_graphTypeResolverSource.Resolve);
             var query = schema.Query = new ObjectGraphType();
             foreach (var entityType in model.GetEntityTypes())
             {

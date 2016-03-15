@@ -14,12 +14,12 @@ namespace GrefQL.Query
     public class FieldResolverFactory : IFieldResolverFactory
     {
         private static readonly MethodInfo _efPropertyMethodInfo
-            = typeof(EF).GetTypeInfo().GetDeclaredMethod(nameof(Property));
+            = typeof (EF).GetTypeInfo().GetDeclaredMethod(nameof(Property));
 
         public Func<ResolveFieldContext, object> CreateResolveEntityByKey(IEntityType entityType)
         {
             var resolveFieldContextParameterExpression
-                = Expression.Parameter(typeof(ResolveFieldContext), "resolveFieldContext");
+                = Expression.Parameter(typeof (ResolveFieldContext), "resolveFieldContext");
 
             var entityParameterExpression
                 = Expression.Parameter(entityType.ClrType, "entity");
@@ -89,13 +89,13 @@ namespace GrefQL.Query
         }
 
         public static MethodInfo _getArgumentMethodInfo
-            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(GetArgument));
+            = typeof (FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(GetArgument));
 
         private static TArgument GetArgument<TArgument>(ResolveFieldContext resolveFieldContext, string name)
             => (TArgument)resolveFieldContext.Arguments[name];
 
         public static MethodInfo _queryEntityByKeyAsyncMethodInfo
-            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(QueryEntityByKeyAsync));
+            = typeof (FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(QueryEntityByKeyAsync));
 
         private static Task<TEntity> QueryEntityByKeyAsync<TEntity>(
             ResolveFieldContext resolveFieldContext,

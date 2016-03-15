@@ -1,6 +1,4 @@
-﻿using GraphQL;
-using GraphQL.Http;
-using GrefQL.Tests.Model.Northwind;
+﻿using GraphQL.Http;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;

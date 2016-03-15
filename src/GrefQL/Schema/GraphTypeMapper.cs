@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace GrefQL.Metadata
+namespace GrefQL.Schema
 {
     public class GraphTypeMapper : IGraphTypeMapper
     {
