@@ -14,7 +14,7 @@ namespace GrefQL.Tests.Model.Northwind
             modelBuilder.Entity<Customer>().ToTable("Customers");
             // TODO don't require user to manually add annotation
             // TODO don't hang the GraphQL model off the IModel
-            modelBuilder.HasAnnotation(GraphQLAnnotationNames.Schema, new NorthwindGraph(this));
+            modelBuilder.HasAnnotation(GraphQLAnnotationNames.Schema, new NorthwindGraph());
         }
 
         public DbSet<Customer> Customers { get; set; }
