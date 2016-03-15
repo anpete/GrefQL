@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace GrefQL
 {
-    public class FieldResolverFactory
+    public class FieldResolverFactory : IFieldResolverFactory
     {
         private static readonly MethodInfo _efPropertyMethodInfo
             = typeof(EF).GetTypeInfo().GetDeclaredMethod(nameof(Property));
