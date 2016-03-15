@@ -9,17 +9,24 @@ namespace GrefQL.Schema
     {
         private static readonly Dictionary<Type, Type> _map = new Dictionary<Type, Type>
         {
+            { typeof (ushort), typeof (IntGraphType) },
+            { typeof (short), typeof (IntGraphType) },
+            { typeof (uint), typeof (IntGraphType) },
             { typeof (int), typeof (IntGraphType) },
+            { typeof (long), typeof (LongGraphType) },
+            { typeof (ulong), typeof (LongGraphType) },
             { typeof (string), typeof (StringGraphType) },
             { typeof (double), typeof (FloatGraphType) },
+            { typeof (float), typeof (FloatGraphType) },
             { typeof (bool), typeof (BooleanGraphType) },
-            { typeof (DateTime), typeof (DateGraphType) }
+            { typeof (DateTime), typeof (DateGraphType) },
+            { typeof (DateTimeOffset), typeof (DateGraphType) },
         };
 
         public Type FindMapping(IProperty property, bool notNull = false)
         {
             Type mapping;
-            _map.TryGetValue(property.ClrType, out mapping);
+            _map.TryGetValue(property.ClrType.UnwrapNullableType(), out mapping);
             if ((mapping != null) && notNull)
             {
                 return typeof (NonNullGraphType<>).MakeGenericType(mapping);

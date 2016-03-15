@@ -112,9 +112,11 @@
     <Compile Include="Schema\IGraphTypeMapper.cs" />
     <Compile Include="Schema\IGraphSchemaFactory.cs" />
     <Compile Include="Schema\IGraphTypeResolverSource.cs" />
-    <Compile Include="Schema\ObjectGraphType`.cs" />
+    <Compile Include="Types\LongGraphType.cs" />
+    <Compile Include="Types\ObjectGraphType`.cs" />
     <Compile Include="ServiceCollectionExtension.cs" />
     <Compile Include="Utilities\StringExtensions.cs" />
+    <Compile Include="Utilities\TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
