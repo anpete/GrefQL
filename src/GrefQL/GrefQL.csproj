@@ -101,13 +101,15 @@
     <Compile Include="IGraphSchemaFactory.cs" />
     <Compile Include="IGraphTypeResolverSource.cs" />
     <Compile Include="ObjectGraphType`.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
