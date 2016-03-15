@@ -29,8 +29,14 @@ namespace GrefQL.Tests.Model.Northwind
                         }
                     }),
                 resolve: context
-                    => (context.Source as DbContext)?.Set<Customer>()
-                        .SingleAsync(c => c.CustomerId == (string)context.Arguments["customerId"]));
+                    =>
+                    {
+                        // TODO: #4795
+                        var customerId = (string)context.Arguments["customerId"];
+
+                        return (context.Source as DbContext)?.Set<Customer>()
+                            .SingleAsync(c => c.CustomerId == customerId);
+                    });
         }
     }
 

@@ -5,7 +5,7 @@ namespace GrefQL.Tests.Model.Northwind
     public class NorthwindContext : DbContext
     {
         public NorthwindContext(DbContextOptions options)
-            :base(options)
+            : base(options)
         {
         }
 
