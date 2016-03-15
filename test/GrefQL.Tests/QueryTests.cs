@@ -1,4 +1,6 @@
-﻿using GraphQL.Http;
+﻿using GraphQL;
+using GraphQL.Http;
+using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
@@ -8,10 +10,10 @@ namespace GrefQL.Tests
     public class QueryTests : NorthwindTestsBase
     {
         [Fact]
-        public void Hello_world()
+        public void Query_customers_by_id()
         {
             const string query = @"
-                query CustomerNameQuery {
+                query Customer {
                   customer(customerId: 'ALFKI') {
                     customerId
                     companyName
@@ -22,6 +24,34 @@ namespace GrefQL.Tests
             using (var data = CreateContext())
             {
                 var result = data.ExecuteGraphQLQuery(query);
+
+                Assert.Null(result.Errors);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
+        [Fact]
+        public void Sandbox()
+        {
+            const string query = @"
+                {
+                  customers {
+                    customerId
+                    companyName
+                    contactName
+                  }
+                }";
+
+            using (var data = CreateContext())
+            {
+                var schema = new NorthwindGraph();
+                var documentExecutor = new DocumentExecuter();
+
+                var result = documentExecutor.ExecuteAsync(schema, data, query, null).Result;
 
                 Assert.Null(result.Errors);
 

@@ -16,7 +16,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
@@ -41,7 +41,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var orderDetailType = context.Model.FindEntityType(typeof (OrderDetail));
+                var orderDetailType = context.Model.FindEntityType(typeof(OrderDetail));
 
                 Assert.NotNull(orderDetailType);
 
@@ -63,6 +63,30 @@ namespace GrefQL.Tests
 
                 Assert.Equal(10248, orderDetail.OrderId);
                 Assert.Equal(11, orderDetail.ProductId);
+            }
+        }
+
+        [Fact]
+        public async Task Create_resolver_for_entities()
+        {
+            using (var context = CreateContext())
+            {
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+
+                Assert.NotNull(customerType);
+
+                var fieldResolverFactory = new FieldResolverFactory();
+
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
+
+                var resolveFieldContext = new ResolveFieldContext
+                {
+                    Source = context
+                };
+
+                var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
+
+                Assert.Equal(91, customers.Length);
             }
         }
 

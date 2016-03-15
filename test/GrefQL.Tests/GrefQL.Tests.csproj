@@ -180,6 +180,7 @@
     <Compile Include="Model\Northwind\Customer.cs" />
     <Compile Include="Model\Northwind\Employee.cs" />
     <Compile Include="Model\Northwind\NorthwindContext.cs" />
+    <Compile Include="Model\Northwind\NorthwindGraph.cs" />
     <Compile Include="Model\Northwind\Order.cs" />
     <Compile Include="Model\Northwind\OrderDetail.cs" />
     <Compile Include="Model\Northwind\Product.cs" />
