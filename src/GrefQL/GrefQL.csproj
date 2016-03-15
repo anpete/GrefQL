@@ -98,6 +98,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbContextExtension.cs" />
+    <Compile Include="Metadata\GraphQLPropertyAnnotations.cs" />
+    <Compile Include="Metadata\GraphQLEntityTypeAnnotations.cs" />
+    <Compile Include="Metadata\GraphQLMetadataExtensions.cs" />
     <Compile Include="Query\FieldResolverFactory.cs" />
     <Compile Include="Query\GraphQLExecutor.cs" />
     <Compile Include="Metadata\GraphQLAnnotationNames.cs" />

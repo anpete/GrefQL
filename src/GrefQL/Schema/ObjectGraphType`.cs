@@ -6,6 +6,8 @@ namespace GrefQL.Schema
     {
         public ObjectGraphType()
         {
+            Name = typeof (T).Name;
+            Description = typeof (T).FullName;
             IsTypeOf = v => v is T;
         }
     }
