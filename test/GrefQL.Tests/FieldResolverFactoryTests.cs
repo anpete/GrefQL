@@ -25,7 +25,7 @@ namespace GrefQL.Tests
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
-                    Arguments = new Dictionary<string, object> { ["CustomerId"] = "ALFKI" },
+                    Arguments = new Dictionary<string, object> { ["customerId"] = "ALFKI" },
                     Source = context
                 };
 
@@ -52,8 +52,8 @@ namespace GrefQL.Tests
                 {
                     Arguments = new Dictionary<string, object>
                     {
-                        ["OrderId"] = 10248,
-                        ["ProductId"] = 11
+                        ["orderId"] = 10248,
+                        ["productId"] = 11
                     },
                     Source = context
                 };

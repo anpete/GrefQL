@@ -31,8 +31,10 @@ namespace GrefQL
 
             foreach (var keyProperty in entityType.FindPrimaryKey().Properties)
             {
+                var keyPropertyVariableName = keyProperty.Name.ToCamelCase();
+
                 var keyVariableExpression
-                    = Expression.Variable(keyProperty.ClrType, keyProperty.Name);
+                    = Expression.Variable(keyProperty.ClrType, keyPropertyVariableName);
 
                 variableExpressions.Add(keyVariableExpression);
 
@@ -42,7 +44,7 @@ namespace GrefQL
                         Expression.Call(
                             _getArgumentMethodInfo.MakeGenericMethod(keyProperty.ClrType),
                             resolveFieldContextParameterExpression,
-                            Expression.Constant(keyProperty.Name)));
+                            Expression.Constant(keyPropertyVariableName)));
 
                 blockExpressions.Add(assignKeyVariableExpression);
 
