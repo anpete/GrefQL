@@ -101,6 +101,8 @@ namespace GrefQL
             ResolveFieldContext resolveFieldContext,
             Expression<Func<TEntity, bool>> predicate)
             where TEntity : class
-            => (resolveFieldContext.Source as DbContext)?.Set<TEntity>().SingleAsync(predicate);
+            => (resolveFieldContext.Source as DbContext)?
+                .Set<TEntity>()
+                .SingleAsync(predicate, resolveFieldContext.CancellationToken);
     }
 }

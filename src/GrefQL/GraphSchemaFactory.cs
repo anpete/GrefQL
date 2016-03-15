@@ -54,6 +54,7 @@ namespace GrefQL
                 var boundMethod = argumentBuilder.MakeGenericMethod(arg.Type);
                 boundMethod.Invoke(fb, new object[] { arg.Name, arg.Description });
             }
+
             fb.FieldType.Resolve = _resolveFactory.CreateResolveEntityByKey(entityType);
 
             var graphType = new ObjectGraphType<TEntity>();
