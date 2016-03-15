@@ -90,6 +90,32 @@ namespace GrefQL.Tests
             }
         }
 
+        [Fact]
+        public async Task Create_resolver_for_entities_with_limit()
+        {
+            using (var context = CreateContext())
+            {
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+
+                Assert.NotNull(customerType);
+
+                var fieldResolverFactory = new FieldResolverFactory();
+
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
+
+                var resolveFieldContext = new ResolveFieldContext
+                {
+                    Arguments = new Dictionary<string, object> { ["limit"] = 10 },
+                    Source = context
+                };
+
+                var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
+
+                Assert.Equal(10, customers.Length);
+            }
+        }
+
+
         public FieldResolverFactoryTests(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
             : base(northwindFixture, testOutputHelper)
         {

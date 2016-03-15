@@ -1,4 +1,5 @@
-﻿using GraphQL.Types;
+﻿using System.Linq;
+using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrefQL.Tests.Model.Northwind
@@ -42,10 +43,35 @@ namespace GrefQL.Tests.Model.Northwind
 
             Field<ListGraphType<CustomerType>>(
                 "customers",
+                arguments: new QueryArguments(
+                    new[]
+                    {
+                        new QueryArgument<IntGraphType>
+                        {
+                            Name = "limit",
+                            Description = "maximum number of results to return"
+                        }
+                    }),
                 resolve: context
                     =>
                     {
-                        return (context.Source as DbContext)?.Set<Customer>().ToArrayAsync();
+                        var dbContext = context.Source as DbContext;
+
+                        if (dbContext == null)
+                        {
+                            return null;
+                        }
+
+                        IQueryable<Customer> query = dbContext.Set<Customer>();
+
+                        object limit;
+                        if (context.Arguments.TryGetValue("limit", out limit)
+                            && limit is int)
+                        {
+                            query = query.Take((int)limit);
+                        }
+
+                        return query.ToArrayAsync();
                     });
         }
     }

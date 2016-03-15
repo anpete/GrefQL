@@ -40,7 +40,7 @@ namespace GrefQL.Tests
         {
             const string query = @"
                 {
-                  customers {
+                  customers(limit: 10) {
                     customerId
                     companyName
                     contactName
@@ -88,8 +88,7 @@ namespace GrefQL.Tests
             }
         }
 
-        public QueryTests(NorthwindFixture northwindFixture,
-            ITestOutputHelper testOutputHelper)
+        public QueryTests(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
             : base(northwindFixture, testOutputHelper)
         {
         }

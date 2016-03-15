@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -40,9 +41,25 @@ namespace GrefQL.Query
 
         private static Task<TEntity[]> QueryEntitiesAsync<TEntity>(ResolveFieldContext resolveFieldContext)
             where TEntity : class
-            => (resolveFieldContext.Source as DbContext)?
-                .Set<TEntity>()
-                .ToArrayAsync(resolveFieldContext.CancellationToken);
+        {
+            var dbContext = resolveFieldContext.Source as DbContext;
+
+            if (dbContext == null)
+            {
+                return null;
+            }
+
+            IQueryable<TEntity> query = dbContext.Set<TEntity>();
+
+            object limit = null;
+            if (resolveFieldContext.Arguments?.TryGetValue("limit", out limit) == true
+                && limit is int)
+            {
+                query = query.Take((int)limit);
+            }
+
+            return query.ToArrayAsync(resolveFieldContext.CancellationToken);
+        }
 
         public Func<ResolveFieldContext, object> CreateResolveEntityByKey(IEntityType entityType)
         {
@@ -101,6 +118,7 @@ namespace GrefQL.Query
 
             blockExpressions.Add(queryEntityByKeyAsyncCallExpression);
 
+            // TODO: Remove closure here
             var blockExpression
                 = Expression.Block(variableExpressions, blockExpressions);
 
