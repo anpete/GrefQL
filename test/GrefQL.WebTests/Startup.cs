@@ -13,7 +13,15 @@ namespace GrefQL.WebTests
             services.AddMvc();
             services.AddLogging();
             services.AddEntityFrameworkSqlServer()
-                .AddDbContext<NorthwindContext>(o => o.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=Northwind;Trusted_Connection=True;"));
+                .AddDbContext<NorthwindContext>(o =>
+                    {
+                        var efServices = new ServiceCollection();
+                        efServices.AddGraphQL();
+                        efServices.AddEntityFrameworkSqlServer();
+
+                        o.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=Northwind;Trusted_Connection=True;");
+                        o.UseInternalServiceProvider(efServices.BuildServiceProvider());
+                    });
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

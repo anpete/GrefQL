@@ -1,4 +1,5 @@
 ﻿using GraphQL.Types;
+using GrefQL.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Xunit;
 

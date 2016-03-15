@@ -472,6 +472,7 @@
     <Compile Include="Controllers\GraphController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Startup.cs" />
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="wwwroot\app.jsx" />
     <Content Include="wwwroot\bundle.js">

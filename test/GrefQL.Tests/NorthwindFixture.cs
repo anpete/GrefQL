@@ -17,6 +17,7 @@ namespace GrefQL.Tests
             _serviceProvider
                 = new ServiceCollection()
                     .AddEntityFrameworkSqlServer()
+                    .AddGraphQL()
                     .BuildServiceProvider();
 
             var contextOptionsBuilder

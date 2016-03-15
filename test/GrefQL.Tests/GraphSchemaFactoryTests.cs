@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using GraphQL.Types;
+using GrefQL.Metadata;
+using GrefQL.Query;
 using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;

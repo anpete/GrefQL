@@ -2,7 +2,7 @@ using System;
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace GrefQL
+namespace GrefQL.Query
 {
     public interface IFieldResolverFactory
     {

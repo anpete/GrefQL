@@ -1,7 +1,7 @@
 ﻿using GraphQL.Types;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace GrefQL
+namespace GrefQL.Metadata
 {
     public interface IGraphSchemaFactory
     {

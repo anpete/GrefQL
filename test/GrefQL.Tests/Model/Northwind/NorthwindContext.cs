@@ -31,11 +31,6 @@ namespace GrefQL.Tests.Model.Northwind
             modelBuilder
                 .Entity<Employee>()
                 .ToTable("Employees");
-
-            // TODO don't hang the GraphQL model off the IModel
-            // TODO use DI
-            var factory = new GraphSchemaFactory(new GraphTypeMapper(), new FieldResolverFactory(), new GraphTypeResolverSource());
-            modelBuilder.HasAnnotation(GraphQLAnnotationNames.Schema, factory.Create(modelBuilder.Model));
         }
 
         public DbSet<Customer> Customers { get; set; }

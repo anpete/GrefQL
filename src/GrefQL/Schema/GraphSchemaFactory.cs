@@ -2,9 +2,10 @@
 using System.Linq;
 using System.Reflection;
 using GraphQL.Types;
+using GrefQL.Query;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace GrefQL
+namespace GrefQL.Metadata
 {
     public class GraphSchemaFactory : IGraphSchemaFactory
     {
@@ -68,7 +69,7 @@ namespace GrefQL
                     continue;
                 }
                 var boundMethod = _AddField.MakeGenericMethod(fieldGraphType);
-                boundMethod.Invoke(null, new object[]{graphType,prop});
+                boundMethod.Invoke(null, new object[] { graphType, prop });
             }
             _graphTypeResolverSource.AddResolver<ObjectGraphType<TEntity>>(() => graphType);
         }
@@ -80,7 +81,7 @@ namespace GrefQL
                 .GetDeclaredMethod(nameof(AddField));
 
         private static void AddField<TGraphType>(GraphType graphType, IProperty property)
-            where TGraphType : GraphType 
+            where TGraphType : GraphType
             => graphType.Field<TGraphType>()
                 .Name(property.Name.ToCamelCase());
 

@@ -1,6 +1,7 @@
 ﻿using GraphQL;
 using GraphQL.Http;
 using GrefQL.Tests.Model.Northwind;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,14 +20,10 @@ namespace GrefQL.Tests
                     contactName
                   }
                 }";
-            var factory = new GraphSchemaFactory(new GraphTypeMapper(), new FieldResolverFactory(), new GraphTypeResolverSource());
 
             using (var data = CreateContext())
             {
-                var schema = factory.Create(data.Model);
-                var documentExecutor = new DocumentExecuter();
-
-                var result = documentExecutor.ExecuteAsync(schema, data, query, null).Result;
+                var result = data.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
 

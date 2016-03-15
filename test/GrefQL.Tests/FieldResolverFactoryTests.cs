@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using GraphQL.Types;
+using GrefQL.Query;
 using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

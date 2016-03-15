@@ -1,6 +1,6 @@
 using GraphQL.Types;
 
-namespace GrefQL
+namespace GrefQL.Metadata
 {
     public class ObjectGraphType<T> : ObjectGraphType
     {

@@ -1,8 +1,8 @@
-﻿namespace Microsoft.EntityFrameworkCore
+﻿namespace GrefQL.Metadata
 {
     public class GraphQLAnnotationNames
     {
         private const string Prefix = "GraphQL:";
-        public const string Schema = Prefix + "Schema";
+        public const string Description = Prefix + "Description";
     }
 }
