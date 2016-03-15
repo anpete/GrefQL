@@ -4,10 +4,10 @@ namespace GrefQL.Tests.Model.Northwind
 {
     public class Employee
     {
-        public int EmployeeID { get; set; }
+        public int EmployeeId { get; set; }
         public string LastName { get; set; }
         public string FirstName { get; set; }
-        public string Title { get; set; } // shadow-prop in EF model
+        public string Title { get; set; }
         public string TitleOfCourtesy { get; set; }
         public DateTime? BirthDate { get; set; }
         public DateTime? HireDate { get; set; }
@@ -22,37 +22,5 @@ namespace GrefQL.Tests.Model.Northwind
         public string Notes { get; set; }
         public int? ReportsTo { get; set; }
         public string PhotoPath { get; set; }
-
-        public Employee Manager { get; set; }
-
-        protected bool Equals(Employee other)
-        {
-            return EmployeeID == other.EmployeeID;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            return obj.GetType() == GetType()
-                   && Equals((Employee)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return EmployeeID.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return "Employee " + EmployeeID;
-        }
     }
 }
