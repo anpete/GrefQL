@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using GrefQL.Query;
@@ -17,14 +18,14 @@ namespace Microsoft.EntityFrameworkCore
         public static ExecutionResult ExecuteGraphQLQuery(this DbContext context, string query, string variables = null)
             => context.ExecuteGraphQLQueryAsync(query, variables).GetAwaiter().GetResult();
 
-        public static Task<ExecutionResult> ExecuteGraphQLQueryAsync(this DbContext context, string query, string variables = null)
+        public static Task<ExecutionResult> ExecuteGraphQLQueryAsync(this DbContext context, string query, string variables = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var exectutor = context.GetInfrastructure().GetService<GraphQLExecutor>();
             if (exectutor == null)
             {
                 throw new InvalidOperationException("This context is not enabled for GraphQL. Add GraphQL to context services with .AddGraphQL()");
             }
-            return exectutor.ExecuteAsync(context, query, variables);
+            return exectutor.ExecuteAsync(context, query, variables, cancellationToken);
         }
     }
 }

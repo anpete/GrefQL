@@ -24,7 +24,7 @@ namespace GrefQL.Schema
             _graphTypeResolverSource = graphTypeResolverSource;
         }
 
-        public GraphQL.Types.Schema Create(IModel model)
+        public ISchema Create(IModel model)
         {
             var schema = new GraphQL.Types.Schema(_graphTypeResolverSource.Resolve);
             var query = schema.Query = new ObjectGraphType();

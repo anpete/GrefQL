@@ -1,5 +1,6 @@
-﻿using GraphQL.Types;
-using GrefQL.Metadata;
+﻿using GraphQL;
+using GraphQL.Execution;
+using GraphQL.Validation;
 using GrefQL.Query;
 using GrefQL.Schema;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -16,6 +17,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddScoped<IGraphSchemaFactory, GraphSchemaFactory>()
                 .AddScoped<IGraphTypeResolverSource, GraphTypeResolverSource>()
                 .AddScoped<GraphQLExecutor>()
-                .AddScoped<ISchema>(p => p.GetRequiredService<IGraphSchemaFactory>().Create(p.GetRequiredService<IModel>()));
+                .AddScoped<IDocumentBuilder, AntlrDocumentBuilder>()
+                .AddScoped<IDocumentValidator, DocumentValidator>()
+                .AddScoped<IDocumentExecuter, DocumentExecuter>()
+                .AddScoped(p => p.GetRequiredService<IGraphSchemaFactory>().Create(p.GetRequiredService<IModel>()));
     }
 }

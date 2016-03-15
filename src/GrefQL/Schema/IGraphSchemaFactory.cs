@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using GraphQL.Types;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace GrefQL.Schema
 {
     public interface IGraphSchemaFactory
     {
-        GraphQL.Types.Schema Create(IModel model);
+        ISchema Create(IModel model);
     }
 }
