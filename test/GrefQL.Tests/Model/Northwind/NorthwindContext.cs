@@ -32,9 +32,10 @@ namespace GrefQL.Tests.Model.Northwind
                 .Entity<Employee>()
                 .ToTable("Employees");
 
-            // TODO don't require user to manually add annotation
             // TODO don't hang the GraphQL model off the IModel
-            modelBuilder.HasAnnotation(GraphQLAnnotationNames.Schema, new NorthwindGraph());
+            // TODO use DI
+            var factory = new GraphSchemaFactory(new GraphTypeMapper(), new FieldResolverFactory(), new GraphTypeResolverSource());
+            modelBuilder.HasAnnotation(GraphQLAnnotationNames.Schema, factory.Create(modelBuilder.Model));
         }
 
         public DbSet<Customer> Customers { get; set; }

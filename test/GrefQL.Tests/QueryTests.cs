@@ -19,10 +19,11 @@ namespace GrefQL.Tests
                     contactName
                   }
                 }";
+            var factory = new GraphSchemaFactory(new GraphTypeMapper(), new FieldResolverFactory(), new GraphTypeResolverSource());
 
             using (var data = CreateContext())
             {
-                var schema = new NorthwindGraph();
+                var schema = factory.Create(data.Model);
                 var documentExecutor = new DocumentExecuter();
 
                 var result = documentExecutor.ExecuteAsync(schema, data, query, null).Result;
