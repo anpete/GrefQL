@@ -25,13 +25,10 @@ namespace GrefQL.Tests
 
             using (var data = CreateContext())
             {
-                var schema = new NorthwindGraph
-                {
-                    DbContext = data
-                };
+                var schema = new NorthwindGraph();
                 var documentExecutor = new DocumentExecuter();
 
-                var result = documentExecutor.ExecuteAsync(schema, null, query, null).Result;
+                var result = documentExecutor.ExecuteAsync(schema, data, query, null).Result;
 
                 Assert.Null(result.Errors);
 

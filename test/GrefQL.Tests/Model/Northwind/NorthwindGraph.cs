@@ -3,17 +3,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrefQL.Tests.Model.Northwind
 {
-    public class NorthwindGraph : Graph
+    public class NorthwindGraph : Schema
     {
         public NorthwindGraph()
         {
-            Query = new NorthwindQuery(this);
+            Query = new NorthwindQuery();
         }
     }
 
     public class NorthwindQuery : ObjectGraphType
     {
-        public NorthwindQuery(NorthwindGraph graph)
+        public NorthwindQuery()
         {
             Name = "Query";
 
@@ -29,7 +29,7 @@ namespace GrefQL.Tests.Model.Northwind
                         }
                     }),
                 resolve: context
-                    => graph.DbContext.Set<Customer>()
+                    => (context.Source as DbContext)?.Set<Customer>()
                         .SingleAsync(c => c.CustomerId == (string)context.Arguments["customerId"]));
         }
     }
