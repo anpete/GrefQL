@@ -1,4 +1,5 @@
-﻿using GraphQL;
+using System.Collections.Generic;
+using GraphQL;
 using GraphQL.Http;
 using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
@@ -62,8 +63,36 @@ namespace GrefQL.Tests
             }
         }
 
-        public QueryTests(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
-            : base(northwindFixture, testOutputHelper)
+        [Fact]
+        public void Introspection()
+        {
+            const string query = @"{
+                   __schema { 
+                     types {
+                        name
+                     }   
+                   }
+            } ";
+            using (var db = CreateContext())
+            {
+                var schema = db.ExecuteGraphQLQuery(query);
+                dynamic data = schema.Data;
+                var result = Assert.IsType<object[]>(data["__schema"]["types"]);
+                var names = new HashSet<string>();
+                foreach (var t in result)
+                {
+                    names.Add(t["name"]);
+                }
+                Assert.Contains("Customer", names);
+            }
+        }
+
+        public
+            QueryTests(NorthwindFixture
+                northwindFixture,
+                ITestOutputHelper testOutputHelper)
+            :
+                base(northwindFixture, testOutputHelper)
         {
         }
     }

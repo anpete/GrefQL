@@ -3,7 +3,9 @@ using System.Linq;
 using System.Reflection;
 using GraphQL.Types;
 using GrefQL.Query;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace GrefQL.Schema
 {
@@ -44,9 +46,9 @@ namespace GrefQL.Schema
         private void CreateGraphType<TEntity>(ObjectGraphType root, IEntityType entityType)
         {
             var fb = root.Field<ObjectGraphType<TEntity>>()
-                .Name(CreateFieldName(entityType));
-
-            // TODO pull descriptions from annotations
+                // TODO ensure this is in a safe format for the schema
+                .Name(entityType.DisplayName().ToCamelCase())
+                .Description(entityType.GraphQL().Description ?? $"{entityType.DisplayName()} ({entityType.ClrType.DisplayName(fullName: true)})");
 
             var argumentBuilder = ArgumentBuilder(fb.GetType().GetTypeInfo());
 
@@ -83,7 +85,9 @@ namespace GrefQL.Schema
         private static void AddField<TGraphType>(GraphType graphType, IProperty property)
             where TGraphType : GraphType
             => graphType.Field<TGraphType>()
-                .Name(property.Name.ToCamelCase());
+                .Name(property.Name.ToCamelCase())
+                .Description(property.GraphQL().Description 
+                    ?? $"{property.DeclaringEntityType.DisplayName()}.{property.Name} ({property.DeclaringEntityType.ClrType.DisplayName(fullName: true)}.{property.Name})");
 
         private static MethodInfo ArgumentBuilder(TypeInfo fieldBuilder)
             => fieldBuilder
@@ -99,9 +103,5 @@ namespace GrefQL.Schema
                     Name = prop.Name.ToCamelCase()
                 });
         }
-
-        private string CreateFieldName(IEntityType entityType)
-            // TODO ensure unique names
-            => entityType.Name.Substring(entityType.Name.LastIndexOf('.') + 1).ToCamelCase();
     }
 }

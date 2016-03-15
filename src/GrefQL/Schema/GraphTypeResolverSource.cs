@@ -16,7 +16,11 @@ namespace GrefQL.Schema
         {
             Func<GraphType> action;
             _cache.TryGetValue(type, out action);
-            return action?.Invoke();
+            if (action == null)
+            {
+                return (GraphType)Activator.CreateInstance(type);
+            }
+            return action.Invoke();
         }
     }
 }
