@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using GraphQL;
+using GraphQL.Types;
 
 // ReSharper disable InconsistentNaming
 
@@ -12,15 +13,12 @@ namespace Microsoft.EntityFrameworkCore
     {
         // TODO strong type query and variables
         public static ExecutionResult ExecuteGraphQLQuery(this DbContext context, string query, string variables)
-            => new ExecutionResult
-            {
-                Errors = new ExecutionErrors
-                {
-                    new ExecutionError("Not implemented", new NotImplementedException())
-                }
-            };
+            => context.ExecuteGraphQLQueryAsync(query, variables).GetAwaiter().GetResult();
 
         public static Task<ExecutionResult> ExecuteGraphQLQueryAsync(this DbContext context, string query, string variables)
-            => Task.FromResult(context.ExecuteGraphQLQuery(query, variables));
+        {
+            var documentExecutor = new DocumentExecuter();
+            return documentExecutor.ExecuteAsync(context.Model[GraphQLAnnotationNames.Schema] as Schema, null, query, null);
+        }
     }
 }

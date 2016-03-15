@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using GraphQL;
-using GraphQL.Http;
 using GrefQL.Tests.Model.Northwind;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -10,20 +10,18 @@ namespace GrefQL.WebTests.Controllers
 {
     public class GraphController : Controller
     {
+        private static readonly JsonSerializerSettings DefaultSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            DateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF'Z'",
+        };
+
         [Route("/graphql")]
         public async Task<IActionResult> Execute([FromBody] GraphQLQuery query, [FromServices] NorthwindContext context)
         {
-            var schema = new NorthwindGraph(context);
-            var documentExecutor = new DocumentExecuter();
-
-            var result = await documentExecutor.ExecuteAsync(schema, null, query.Query, null);
-
-            return Json(result, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                DateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF'Z'",
-            });
+            var result = await context.ExecuteGraphQLQueryAsync(query.Query, query.Variables);
+            return Json(result, DefaultSettings);
         }
     }
 
