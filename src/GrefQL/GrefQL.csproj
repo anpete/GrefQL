@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbContextExtension.cs" />
+    <Compile Include="FieldResolverFactory.cs" />
     <Compile Include="GraphQLAnnotationNames.cs" />
     <Compile Include="GraphSchemaFactory.cs" />
     <Compile Include="GraphTypeMapper.cs" />

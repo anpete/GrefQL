@@ -174,12 +174,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FieldResolverFactoryTests.cs" />
     <Compile Include="GraphSchemaFactoryTests.cs" />
     <Compile Include="GraphTypeMapperTests.cs" />
     <Compile Include="Model\Northwind\Customer.cs" />
     <Compile Include="Model\Northwind\NorthwindContext.cs" />
     <Compile Include="Model\Northwind\NorthwindGraph.cs" />
-    <Compile Include="Query.cs" />
+    <Compile Include="Model\Northwind\OrderDetail.cs" />
+    <Compile Include="NorthwindFixture.cs" />
+    <Compile Include="NorthwindTestsBase.cs" />
+    <Compile Include="QueryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestOutputHelperLoggerProvider.cs" />
   </ItemGroup>

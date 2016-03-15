@@ -11,7 +11,15 @@ namespace GrefQL.Tests.Model.Northwind
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Customer>().ToTable("Customers");
+            modelBuilder
+                .Entity<Customer>()
+                .ToTable("Customers");
+
+            modelBuilder
+                .Entity<OrderDetail>()
+                .ToTable("Order Details")
+                .HasKey(od => new { od.OrderId, od.ProductId });
+
             // TODO don't require user to manually add annotation
             // TODO don't hang the GraphQL model off the IModel
             modelBuilder.HasAnnotation(GraphQLAnnotationNames.Schema, new NorthwindGraph());
