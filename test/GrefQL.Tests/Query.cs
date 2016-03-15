@@ -1,8 +1,7 @@
-﻿using System.Linq;
-using GraphQL;
+﻿using GraphQL;
 using GraphQL.Http;
 using GrefQL.Tests.Model.Northwind;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -44,16 +43,18 @@ namespace GrefQL.Tests
         {
             var serviceProvider
                 = new ServiceCollection()
-                    .AddEntityFramework()
-                    .AddSqlServer()
-                    .GetInfrastructure()
+                    .AddEntityFrameworkSqlServer()
                     .BuildServiceProvider();
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             loggerFactory.AddProvider(new TestOutputHelperLoggerProvider(_testOutputHelper));
 
-            return new NorthwindContext(serviceProvider);
+            var options = new DbContextOptionsBuilder()
+                .UseInternalServiceProvider(serviceProvider)
+                .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=Northwind;Trusted_Connection=True;");
+
+            return new NorthwindContext(options.Options);
         }
 
         private readonly ITestOutputHelper _testOutputHelper;
