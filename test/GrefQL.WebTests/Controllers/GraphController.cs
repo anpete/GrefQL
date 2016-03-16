@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using GrefQL.Tests.Model.Northwind;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
