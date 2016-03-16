@@ -51,14 +51,23 @@ namespace GrefQL.Query
 
             IQueryable<TEntity> query = dbContext.Set<TEntity>();
 
-            object limit = null;
-            if (resolveFieldContext.Arguments?.TryGetValue("limit", out limit) == true
-                && limit is int)
-            {
-                query = query.Take((int)limit);
-            }
+            TryApplyArgument<int>(resolveFieldContext, "offset", offset => query = query.Skip(offset));
+            TryApplyArgument<int>(resolveFieldContext, "limit", limit => query = query.Take(limit));
 
             return query.ToArrayAsync(resolveFieldContext.CancellationToken);
+        }
+
+        private static void TryApplyArgument<TArgument>(
+            ResolveFieldContext resolveFieldContext,
+            string argument,
+            Action<TArgument> action)
+        {
+            object value = null;
+            if (resolveFieldContext.Arguments?.TryGetValue(argument, out value) == true
+                && value is TArgument)
+            {
+                action((TArgument)value);
+            }
         }
 
         public Func<ResolveFieldContext, object> CreateResolveEntityByKey(IEntityType entityType)
