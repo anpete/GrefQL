@@ -118,6 +118,7 @@
     <Compile Include="Types\ObjectGraphType`.cs" />
     <Compile Include="ServiceCollectionExtension.cs" />
     <Compile Include="Utilities\Inflector.cs" />
+    <Compile Include="Utilities\StringExtensions.cs" />
     <Compile Include="Utilities\TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

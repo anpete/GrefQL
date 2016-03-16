@@ -7,11 +7,15 @@ namespace GrefQL.Tests
     public abstract class NorthwindTestsBase : IClassFixture<NorthwindFixture>
     {
         private readonly NorthwindFixture _northwindFixture;
-        private readonly ITestOutputHelper _testOutputHelper;
+        private ITestOutputHelper _testOutputHelper;
 
-        protected NorthwindTestsBase(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
+        protected NorthwindTestsBase(NorthwindFixture northwindFixture)
         {
             _northwindFixture = northwindFixture;
+        }
+
+        protected void SetTestOutputHelper(ITestOutputHelper testOutputHelper)
+        {
             _testOutputHelper = testOutputHelper;
             _northwindFixture.SetTestOutputHelper(testOutputHelper);
         }

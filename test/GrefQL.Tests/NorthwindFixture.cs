@@ -1,5 +1,4 @@
-﻿using System;
-using GrefQL.Tests.Model.Northwind;
+﻿using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,20 +8,24 @@ namespace GrefQL.Tests
 {
     public class NorthwindFixture
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly TestOutputHelperLoggerProvider _testOutputHelperLoggerProvider = new TestOutputHelperLoggerProvider();
         private readonly DbContextOptions _options;
 
         public NorthwindFixture()
         {
-            _serviceProvider
+            var serviceProvider 
                 = new ServiceCollection()
-                    .AddEntityFrameworkSqlServer()
-                    .AddGraphQL()
-                    .BuildServiceProvider();
+                .AddEntityFrameworkSqlServer()
+                .AddGraphQL()
+                .BuildServiceProvider();
+
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            loggerFactory.AddProvider(_testOutputHelperLoggerProvider);
 
             var contextOptionsBuilder
                 = new DbContextOptionsBuilder()
-                    .UseInternalServiceProvider(_serviceProvider)
+                    .UseInternalServiceProvider(serviceProvider)
                     .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=Northwind;Trusted_Connection=True;")
                     .EnableSensitiveDataLogging();
 
@@ -33,9 +36,7 @@ namespace GrefQL.Tests
 
         public void SetTestOutputHelper(ITestOutputHelper testOutputHelper)
         {
-            var loggerFactory = _serviceProvider.GetService<ILoggerFactory>();
-
-            loggerFactory.AddProvider(new TestOutputHelperLoggerProvider(testOutputHelper));
+            _testOutputHelperLoggerProvider.TestOutputHelper = testOutputHelper;
         }
     }
 }

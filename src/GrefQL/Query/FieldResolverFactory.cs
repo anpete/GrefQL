@@ -7,14 +7,25 @@ using System.Reflection;
 using System.Threading.Tasks;
 using GraphQL.Types;
 using GrefQL.Schema;
+using GrefQL.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
+// ReSharper disable AccessToModifiedClosure
 
 namespace GrefQL.Query
 {
     public class FieldResolverFactory : IFieldResolverFactory
     {
+        private const string OffsetArgumentName = "offset";
+        private const string LimitArgumentName = "limit";
+        private const string OrderByArgumentName = "orderBy";
+        private const string FieldFieldName = "field";
+        private const string DirectionFieldName = "direction";
+        private const string AscendingEnumName = "ASC";
+        private const string DescendingEnumName = "DESC";
+
         public FieldResolverFactory(IGraphTypeMapper typeMapper)
         {
             _typeMapper = typeMapper;
@@ -28,17 +39,48 @@ namespace GrefQL.Query
         private static readonly MethodInfo _efPropertyMethodInfo
             = typeof(EF).GetTypeInfo().GetDeclaredMethod(nameof(Property));
 
-        private static readonly List<QueryArgument> ListArguments = new List<QueryArgument>
+        private static readonly List<QueryArgument> _listArguments = new List<QueryArgument>
         {
             new QueryArgument<IntGraphType>
             {
-                Name = "offset"
+                Name = OffsetArgumentName,
+                Description = "The number of results to skip."
             },
             new QueryArgument<IntGraphType>
             {
-                Name = "limit"
+                Name = LimitArgumentName,
+                Description = "The maximum number of results to return."
+            },
+            new QueryArgument<ListGraphType<OrderingType>>
+            {
+                Name = OrderByArgumentName,
+                Description = "An option list of Orderings used to order the query results."
             }
         };
+
+        public class OrderingDirectionType : EnumerationGraphType
+        {
+            public OrderingDirectionType()
+            {
+                Name = "OrderingDirection";
+                Description = $"Specifies the ordering direction: ${AscendingEnumName} or ${DescendingEnumName}.";
+
+                AddValue(AscendingEnumName, "The ascending direction.", AscendingEnumName);
+                AddValue(DescendingEnumName, "The descending direction.", DescendingEnumName);
+            }
+        }
+
+        public class OrderingType : InputObjectGraphType
+        {
+            public OrderingType()
+            {
+                Name = "Ordering";
+                Description = "Specifies an ordering: A field to order on, and an optional ordering direction.";
+
+                Field<NonNullGraphType<StringGraphType>>(FieldFieldName, "The field to order on.");
+                Field<OrderingDirectionType>(DirectionFieldName, "The optional ordering direction.");
+            }
+        }
 
         public FieldResolver CreateResolveEntityList(IEntityType entityType)
         {
@@ -56,7 +98,7 @@ namespace GrefQL.Query
             return new FieldResolver
             {
                 Resolve = resolveLambdaExpression.Compile(),
-                Arguments = new QueryArguments(ListArguments)
+                Arguments = new QueryArguments(_listArguments)
             };
         }
 
@@ -75,10 +117,85 @@ namespace GrefQL.Query
 
             IQueryable<TEntity> query = dbContext.Set<TEntity>();
 
-            TryApplyArgument<int>(resolveFieldContext, "offset", offset => query = query.Skip(offset));
-            TryApplyArgument<int>(resolveFieldContext, "limit", limit => query = query.Take(limit));
+            // TODO: Probably need a GraphQL->LINQ query cache here.
+
+            TryApplyArgument<int>(resolveFieldContext, OffsetArgumentName, offset => query = query.Skip(offset));
+            TryApplyArgument<int>(resolveFieldContext, LimitArgumentName, limit => query = query.Take(limit));
+
+            query = TryApplyOrderBy(resolveFieldContext, query);
 
             return query.ToArrayAsync(resolveFieldContext.CancellationToken);
+        }
+
+        private static IQueryable<TEntity> TryApplyOrderBy<TEntity>(
+            ResolveFieldContext resolveFieldContext, IQueryable<TEntity> query)
+            where TEntity : class
+        {
+            TryApplyArgument<object[]>(resolveFieldContext, OrderByArgumentName, orderBy =>
+                {
+                    var firstOrdering = true;
+                    var entityParameterExpression = Expression.Parameter(typeof(TEntity), "entity");
+
+                    // ReSharper disable once LoopCanBeConvertedToQuery
+                    foreach (Dictionary<string, object> ordering in orderBy)
+                    {
+                        var field = ((string)ordering[FieldFieldName]).ToPascalCase();
+                        var propertyInfo = typeof(TEntity).GetTypeInfo().GetProperty(field);
+
+                        var propertyExpression
+                            = Expression.MakeMemberAccess(
+                                entityParameterExpression,
+                                propertyInfo);
+
+                        object direction;
+                        var descending
+                            = ordering.TryGetValue(DirectionFieldName, out direction)
+                              && (string)direction == DescendingEnumName;
+
+                        query = (IQueryable<TEntity>)
+                            _applyOrderByMethodInfo
+                                .MakeGenericMethod(typeof(TEntity), propertyExpression.Type)
+                                .Invoke(null, new object[]
+                                {
+                                    query,
+                                    entityParameterExpression,
+                                    propertyExpression,
+                                    descending,
+                                    firstOrdering
+                                });
+
+                        firstOrdering = false;
+                    }
+                });
+
+            return query;
+        }
+
+        public static MethodInfo _applyOrderByMethodInfo
+            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(ApplyOrderBy));
+
+        private static IQueryable<TEntity> ApplyOrderBy<TEntity, TKey>(
+            IOrderedQueryable<TEntity> query,
+            ParameterExpression entityParameterExpression,
+            Expression propertyExpression,
+            bool descending,
+            bool firstOrdering)
+        {
+            var keySelector
+                = Expression.Lambda<Func<TEntity, TKey>>(
+                    propertyExpression,
+                    entityParameterExpression);
+
+            if (firstOrdering)
+            {
+                return !descending
+                    ? query.OrderBy(keySelector)
+                    : query.OrderByDescending(keySelector);
+            }
+
+            return !descending
+                ? query.ThenBy(keySelector)
+                : query.ThenByDescending(keySelector);
         }
 
         private static void TryApplyArgument<TArgument>(
@@ -104,7 +221,7 @@ namespace GrefQL.Query
 
             Expression predicateExpression = null;
 
-            var keyArguments = new List<QueryArgument> { };
+            var keyArguments = new List<QueryArgument>();
 
             foreach (var keyProperty in entityType.FindPrimaryKey().Properties)
             {
@@ -114,6 +231,7 @@ namespace GrefQL.Query
                     Name = keyPropertyVariableName,
                     Description = keyProperty.GraphQL().Description
                 };
+
                 keyArguments.Add(queryArgument);
 
                 var keyVariableExpression

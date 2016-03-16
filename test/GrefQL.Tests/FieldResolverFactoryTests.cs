@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using GraphQL.Types;
 using GrefQL.Query;
@@ -115,7 +116,7 @@ namespace GrefQL.Tests
                 Assert.Equal(10, customers.Length);
             }
         }
-        
+
         [Fact]
         public async Task Create_resolver_for_entities_with_offset()
         {
@@ -141,9 +142,122 @@ namespace GrefQL.Tests
             }
         }
 
-        public FieldResolverFactoryTests(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
-            : base(northwindFixture, testOutputHelper)
+        [Fact]
+        public async Task Create_resolver_for_entities_with_ordering()
         {
+            using (var context = CreateContext())
+            {
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+
+                Assert.NotNull(customerType);
+
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
+
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
+
+                var resolveFieldContext = new ResolveFieldContext
+                {
+                    Arguments = new Dictionary<string, object>
+                    {
+                        ["orderBy"] = new object[]
+                        {
+                            new Dictionary<string, object> { ["field"] = "companyName" }
+                        }
+                    },
+                    Source = context
+                };
+
+                var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
+
+                Assert.Equal(91, customers.Length);
+                Assert.Equal("Alfreds Futterkiste", customers.First().CompanyName);
+                Assert.Equal("Wolski  Zajazd", customers.Last().CompanyName);
+            }
+        }
+
+        [Fact]
+        public async Task Create_resolver_for_entities_with_ordering_descending()
+        {
+            using (var context = CreateContext())
+            {
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+
+                Assert.NotNull(customerType);
+
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
+
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
+
+                var resolveFieldContext = new ResolveFieldContext
+                {
+                    Arguments = new Dictionary<string, object>
+                    {
+                        ["orderBy"] = new object[]
+                        {
+                            new Dictionary<string, object>
+                            {
+                                ["field"] = "companyName",
+                                ["direction"] = "DESC"
+                            }
+                        }
+                    },
+                    Source = context
+                };
+
+                var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
+
+                Assert.Equal(91, customers.Length);
+                Assert.Equal("Wolski  Zajazd", customers.First().CompanyName);
+                Assert.Equal("Alfreds Futterkiste", customers.Last().CompanyName);
+            }
+        }
+
+        [Fact]
+        public async Task Create_resolver_for_entities_with_multiple_orderings()
+        {
+            using (var context = CreateContext())
+            {
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+
+                Assert.NotNull(customerType);
+
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
+
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
+
+                var resolveFieldContext = new ResolveFieldContext
+                {
+                    Arguments = new Dictionary<string, object>
+                    {
+                        ["orderBy"] = new object[]
+                        {
+                            new Dictionary<string, object>
+                            {
+                                ["field"] = "city",
+                                ["direction"] = "ASC"
+                            },
+                            new Dictionary<string, object>
+                            {
+                                ["field"] = "companyName",
+                                ["direction"] = "DESC"
+                            }
+                        }
+                    },
+                    Source = context
+                };
+
+                var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
+
+                Assert.Equal(91, customers.Length);
+                Assert.Equal("DRACD", customers.First().CustomerId);
+                Assert.Equal("WOLZA", customers.Last().CustomerId);
+            }
+        }
+
+        public FieldResolverFactoryTests(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
+            : base(northwindFixture)
+        {
+            SetTestOutputHelper(testOutputHelper);
         }
     }
 }

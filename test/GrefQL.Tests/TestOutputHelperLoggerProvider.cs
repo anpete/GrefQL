@@ -6,14 +6,9 @@ namespace GrefQL.Tests
 {
     public sealed class TestOutputHelperLoggerProvider : ILoggerProvider
     {
-        private readonly ITestOutputHelper _testOutputHelper;
+        public ITestOutputHelper TestOutputHelper { get; set; }
 
-        public TestOutputHelperLoggerProvider(ITestOutputHelper testOutputHelper)
-        {
-            _testOutputHelper = testOutputHelper;
-        }
-
-        public ILogger CreateLogger(string categoryName) => new Logger(_testOutputHelper);
+        public ILogger CreateLogger(string categoryName) => new Logger(TestOutputHelper);
 
         public void Dispose()
         {
@@ -37,7 +32,7 @@ namespace GrefQL.Tests
             {
                 if (logLevel == LogLevel.Information)
                 {
-                    _testOutputHelper.WriteLine(formatter(state, exception));
+                    _testOutputHelper?.WriteLine(formatter(state, exception));
                 }
             }
 

@@ -8,6 +8,8 @@ using Xunit.Abstractions;
 
 namespace GrefQL.Tests
 {
+    // TODO: Result verification
+
     public class QueryTests : NorthwindTestsBase
     {
         [Fact]
@@ -22,9 +24,9 @@ namespace GrefQL.Tests
                   }
                 }";
 
-            using (var data = CreateContext())
+            using (var context = CreateContext())
             {
-                var result = data.ExecuteGraphQLQuery(query);
+                var result = context.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
 
@@ -36,7 +38,7 @@ namespace GrefQL.Tests
         }
 
         [Fact]
-        public void Sandbox()
+        public void Query_customers_with_limit()
         {
             const string query = @"
                 {
@@ -47,12 +49,34 @@ namespace GrefQL.Tests
                   }
                 }";
 
-            using (var data = CreateContext())
+            using (var context = CreateContext())
             {
-                var schema = new NorthwindGraph();
-                var documentExecutor = new DocumentExecuter();
+                var result = context.ExecuteGraphQLQuery(query);
 
-                var result = documentExecutor.ExecuteAsync(schema, data, query, null).Result;
+                Assert.Null(result.Errors);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+        
+        [Fact]
+        public void Query_customers_with_order_by()
+        {
+            const string query = @"
+                {
+                  customers(orderBy: [{ field: 'companyName', direction: DESC }]) {
+                    customerId
+                    companyName
+                    contactName
+                  }
+                }";
+
+            using (var context = CreateContext())
+            {
+                var result = context.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
 
@@ -73,9 +97,10 @@ namespace GrefQL.Tests
                      }   
                    }
             } ";
-            using (var db = CreateContext())
+
+            using (var context = CreateContext())
             {
-                var schema = db.ExecuteGraphQLQuery(query);
+                var schema = context.ExecuteGraphQLQuery(query);
                 Assert.Null(schema.Errors);
                 dynamic data = schema.Data;
                 var result = Assert.IsType<object[]>(data["__schema"]["types"]);
@@ -90,8 +115,9 @@ namespace GrefQL.Tests
         }
 
         public QueryTests(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
-            : base(northwindFixture, testOutputHelper)
+            : base(northwindFixture)
         {
+            SetTestOutputHelper(testOutputHelper);
         }
     }
 }
