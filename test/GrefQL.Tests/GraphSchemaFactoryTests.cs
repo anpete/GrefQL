@@ -17,6 +17,7 @@ namespace GrefQL.Tests
         {
             var modelBuilder = new ModelBuilder(SqlServerConventionSetBuilder.Build());
             modelBuilder.Entity<Customer>();
+            modelBuilder.Ignore<Order>();
             var source = new GraphTypeResolverSource();
             var factory = new GraphSchemaFactory(new GraphTypeMapper(), new FieldResolverFactory(new GraphTypeMapper()), source);
 
@@ -49,6 +50,7 @@ namespace GrefQL.Tests
         {
             var modelBuilder = new ModelBuilder(SqlServerConventionSetBuilder.Build());
             modelBuilder.Entity<Customer>();
+            modelBuilder.Ignore<Order>();
             var factory = new GraphSchemaFactory(new GraphTypeMapper(), new FieldResolverFactory(new GraphTypeMapper()), new GraphTypeResolverSource());
 
             var graph = factory.Create(modelBuilder.Model);
@@ -68,6 +70,31 @@ namespace GrefQL.Tests
                         Assert.NotEmpty(list.Arguments);
                         Assert.NotNull(list.Resolve);
                     });
+        }
+
+        [Fact]
+        public void NavProps()
+        {
+            var modelBuilder = new ModelBuilder(SqlServerConventionSetBuilder.Build());
+            modelBuilder.Entity<Order>(e =>
+                {
+                    e.HasOne(o => o.Customer).WithMany(c=>c.Orders).HasForeignKey(o => o.CustomerId);
+                });
+
+            var source = new GraphTypeResolverSource();
+
+            var factory = new GraphSchemaFactory(new GraphTypeMapper(), new FieldResolverFactory(new GraphTypeMapper()), source);
+            var schema = factory.Create(modelBuilder.Model);
+            Assert.NotNull(schema);
+
+            ObjectGraphType<Order> orderType;
+            Assert.True(source.TryResolve(out orderType));
+            Assert.Single(orderType.Fields, f => f.Name == "customer" && f.Type == typeof(ObjectGraphType<Customer>));
+
+
+            ObjectGraphType<Customer> customerType;
+            Assert.True(source.TryResolve(out customerType));
+            Assert.Single(customerType.Fields, f => f.Name == "orders" && f.Type == typeof(ListGraphType<ObjectGraphType<Order>>));
         }
     }
 }

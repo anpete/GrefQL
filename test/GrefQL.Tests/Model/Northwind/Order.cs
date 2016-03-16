@@ -6,6 +6,7 @@ namespace GrefQL.Tests.Model.Northwind
     {
         public int OrderId { get; set; }
         public string CustomerId { get; set; }
+        public Customer Customer { get; set; }
         public int? EmployeeId { get; set; }
         public DateTime? OrderDate { get; set; }
         public DateTime? RequiredDate { get; set; }

@@ -7,5 +7,6 @@ namespace GrefQL.Schema
     {
         void AddResolver(Type type, Func<GraphType> resolver);
         GraphType Resolve(Type type);
+        bool Contains(Type type);
     }
 }

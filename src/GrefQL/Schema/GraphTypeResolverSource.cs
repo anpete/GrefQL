@@ -27,5 +27,7 @@ namespace GrefQL.Schema
             }
             return (GraphType)Activator.CreateInstance(type);
         }
+
+        public bool Contains(Type type) => _cache.ContainsKey(type);
     }
 }

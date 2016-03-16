@@ -8,7 +8,7 @@ namespace GrefQL.Types
         {
             Name = typeof(T).Name;
             Description = typeof(T).FullName;
-            //IsTypeOf = v => v is T;
+            IsTypeOf = v => v is T;
         }
     }
 }

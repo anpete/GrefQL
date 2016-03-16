@@ -19,13 +19,14 @@ namespace GrefQL.WebTests.Controllers
         [Route("/graphql")]
         public async Task<IActionResult> Execute([FromBody] GraphQLQuery query, [FromServices] NorthwindContext context)
         {
-            var result = await context.ExecuteGraphQLQueryAsync(query.Query, query.Variables);
+            var result = await context.ExecuteGraphQLQueryAsync(query.Query, query.Variables, query.OperationName);
             return Json(result, DefaultSettings);
         }
     }
 
     public class GraphQLQuery
     {
+        public string OperationName { get; set; }
         public string Query { get; set; }
         public string Variables { get; set; }
     }

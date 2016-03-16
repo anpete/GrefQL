@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace GrefQL.Tests.Model.Northwind
 {
     public class Customer
@@ -13,5 +15,6 @@ namespace GrefQL.Tests.Model.Northwind
         public string Country { get; set; }
         public string Phone { get; set; }
         public string Fax { get; set; }
+        public ICollection<Order> Orders { get; set; }
     }
 }
