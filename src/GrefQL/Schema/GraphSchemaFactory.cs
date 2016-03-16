@@ -44,7 +44,7 @@ namespace GrefQL.Schema
         private void AddEntityType<TEntity>(ObjectGraphType query, IEntityType entityType)
         {
             CreateGraphType<TEntity>(entityType);
-            
+
             // TODO ensure this is in a safe format for the schema
             var fieldName = entityType.GraphQL().FieldName;
             query.AddField<ObjectGraphType<TEntity>>(fieldName, entityType.GraphQL().Description, _resolveFactory.CreateResolveEntityByKey(entityType));

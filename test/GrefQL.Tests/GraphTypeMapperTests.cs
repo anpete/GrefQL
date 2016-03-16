@@ -9,8 +9,8 @@ namespace GrefQL.Tests
     public class GraphTypeMapperTests
     {
         [Theory]
-        [InlineData(typeof(NonNullGraphType<IntGraphType>), typeof (int), false)]
-        [InlineData(typeof(IntGraphType), typeof (int?), true)]
+        [InlineData(typeof(NonNullGraphType<IntGraphType>), typeof(int), false)]
+        [InlineData(typeof(IntGraphType), typeof(int?), true)]
         public void MapsTypes(Type expected, Type propertyType, bool isNullable)
         {
             var mapper = new GraphTypeMapper();

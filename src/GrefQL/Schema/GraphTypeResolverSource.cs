@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Reflection;
 using GraphQL.Types;
 using GrefQL.Types;
 
@@ -11,7 +10,7 @@ namespace GrefQL.Schema
         private readonly ConcurrentDictionary<Type, Func<GraphType>> _cache
             = new ConcurrentDictionary<Type, Func<GraphType>>();
 
-        public void AddResolver(Type type, Func<GraphType> resolver) 
+        public void AddResolver(Type type, Func<GraphType> resolver)
             => _cache.GetOrAdd(type, resolver);
 
         public GraphType Resolve(Type type)

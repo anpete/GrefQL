@@ -34,14 +34,14 @@ namespace GrefQL.Tests
                     }
                 });
 
-            var entityType = modelBuilder.Model.FindEntityType(typeof (Customer));
+            var entityType = modelBuilder.Model.FindEntityType(typeof(Customer));
             Assert.Equal(entityType.GetProperties().Count(), graphType.Fields.Count());
 
             var id = Assert.Single(graphType.Fields, f => f.Name == "customerId");
-            Assert.Equal(typeof (NonNullGraphType<StringGraphType>), id.Type);
+            Assert.Equal(typeof(NonNullGraphType<StringGraphType>), id.Type);
 
             var company = Assert.Single(graphType.Fields, f => f.Name == "companyName");
-            Assert.Equal(typeof (StringGraphType), company.Type);
+            Assert.Equal(typeof(StringGraphType), company.Type);
         }
 
         [Fact]
@@ -57,14 +57,14 @@ namespace GrefQL.Tests
                 customer =>
                     {
                         Assert.Equal("customer", customer.Name);
-                        Assert.Equal(typeof (ObjectGraphType<Customer>), customer.Type);
+                        Assert.Equal(typeof(ObjectGraphType<Customer>), customer.Type);
                         Assert.NotEmpty(customer.Arguments);
                         Assert.NotNull(customer.Resolve);
                     },
                 list =>
                     {
                         Assert.Equal("customers", list.Name);
-                        Assert.Equal(typeof (ListGraphType<ObjectGraphType<Customer>>), list.Type);
+                        Assert.Equal(typeof(ListGraphType<ObjectGraphType<Customer>>), list.Type);
                         Assert.NotEmpty(list.Arguments);
                         Assert.NotNull(list.Resolve);
                     });

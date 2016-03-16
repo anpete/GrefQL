@@ -13,11 +13,11 @@ namespace GrefQL.Tests
 
         public NorthwindFixture()
         {
-            var serviceProvider 
+            var serviceProvider
                 = new ServiceCollection()
-                .AddEntityFrameworkSqlServer()
-                .AddGraphQL()
-                .BuildServiceProvider();
+                    .AddEntityFrameworkSqlServer()
+                    .AddGraphQL()
+                    .BuildServiceProvider();
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 

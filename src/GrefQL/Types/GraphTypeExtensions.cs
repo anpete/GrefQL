@@ -22,7 +22,7 @@ namespace GrefQL.Types
             boundMethod.Invoke(null, new object[] { root, name, description, resolver });
         }
 
-        private static readonly MethodInfo _fieldMethod = typeof (GraphTypeExtensions).GetTypeInfo()
+        private static readonly MethodInfo _fieldMethod = typeof(GraphTypeExtensions).GetTypeInfo()
             .GetDeclaredMethods(nameof(GraphTypeExtensions.AddField))
             .Single(m => m.ContainsGenericParameters);
     }

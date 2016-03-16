@@ -133,11 +133,11 @@ namespace GrefQL.Utilities
 
         private static string ApplyRules(List<Rule> rules, string word)
         {
-            string result = word;
+            var result = word;
 
             if (!_uncountables.Contains(word.ToLower()))
             {
-                for (int i = rules.Count - 1; i >= 0; i--)
+                for (var i = rules.Count - 1; i >= 0; i--)
                 {
                     if ((result = rules[i].Apply(word)) != null)
                     {
@@ -152,10 +152,7 @@ namespace GrefQL.Utilities
         public static string Titleize(this string word)
         {
             return Regex.Replace(Humanize(Underscore(word)), @"\b([a-z])",
-                                 delegate (Match match)
-                                 {
-                                     return match.Captures[0].Value.ToUpper();
-                                 });
+                delegate(Match match) { return match.Captures[0].Value.ToUpper(); });
         }
 
         public static string Humanize(this string lowercaseAndUnderscoredWord)
@@ -166,10 +163,7 @@ namespace GrefQL.Utilities
         public static string Pascalize(this string lowercaseAndUnderscoredWord)
         {
             return Regex.Replace(lowercaseAndUnderscoredWord, "(?:^|_)(.)",
-                                 delegate (Match match)
-                                 {
-                                     return match.Groups[1].Value.ToUpper();
-                                 });
+                delegate(Match match) { return match.Groups[1].Value.ToUpper(); });
         }
 
         public static string Camelize(this string lowercaseAndUnderscoredWord)
@@ -207,9 +201,10 @@ namespace GrefQL.Utilities
 
         private static string Ordanize(int number, string numberString)
         {
-            int nMod100 = number % 100;
+            var nMod100 = number % 100;
 
-            if (nMod100 >= 11 && nMod100 <= 13)
+            if (nMod100 >= 11
+                && nMod100 <= 13)
             {
                 return numberString + "th";
             }
@@ -226,7 +221,6 @@ namespace GrefQL.Utilities
                     return numberString + "th";
             }
         }
-
 
         public static string Dasherize(this string underscoredWord)
         {

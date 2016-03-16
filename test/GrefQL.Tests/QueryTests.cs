@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using GraphQL;
 using GraphQL.Http;
-using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
@@ -61,7 +59,7 @@ namespace GrefQL.Tests
                 WriteLine(jsonResult);
             }
         }
-        
+
         [Fact]
         public void Query_customers_with_order_by()
         {

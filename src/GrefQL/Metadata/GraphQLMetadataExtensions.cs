@@ -1,6 +1,7 @@
 ﻿using GrefQL.Metadata;
 
 // ReSharper disable once CheckNamespace
+
 namespace Microsoft.EntityFrameworkCore.Metadata
 {
     public static class GraphQLMetadataExtensions
