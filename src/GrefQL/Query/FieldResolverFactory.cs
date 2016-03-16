@@ -108,11 +108,11 @@ namespace GrefQL.Query
 
             foreach (var keyProperty in entityType.FindPrimaryKey().Properties)
             {
-                var keyPropertyVariableName = keyProperty.GraphQL().NameOrDefault();
+                var keyPropertyVariableName = keyProperty.GraphQL().FieldName;
                 var queryArgument = new QueryArgument(_typeMapper.FindMapping(keyProperty))
                 {
                     Name = keyPropertyVariableName,
-                    Description = keyProperty.GraphQL().DescriptionOrDefault()
+                    Description = keyProperty.GraphQL().Description
                 };
                 keyArguments.Add(queryArgument);
 
@@ -191,6 +191,6 @@ namespace GrefQL.Query
             where TEntity : class
             => (resolveFieldContext.Source as DbContext)?
                 .Set<TEntity>()
-                .SingleAsync(predicate, resolveFieldContext.CancellationToken);
+                .SingleOrDefaultAsync(predicate, resolveFieldContext.CancellationToken);
     }
 }

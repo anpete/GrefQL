@@ -14,15 +14,39 @@ namespace GrefQL.Metadata
         }
 
         /// <summary>
-        ///     Description of field that appears in GraphQL
+        ///     FieldName in GraphQL
+        /// </summary>
+        public string FieldName
+        {
+            get { return _entityType[GraphQLAnnotationNames.FieldName] as string ?? _entityType.DisplayName().Camelize(); }
+            set { (_entityType as IMutableEntityType)?.AddAnnotation(GraphQLAnnotationNames.FieldName, value); }
+        }
+
+        /// <summary>
+        ///     Description of field in GraphQL
         /// </summary>
         public string Description
         {
-            get { return _entityType[GraphQLAnnotationNames.Description] as string; }
+            get { return _entityType[GraphQLAnnotationNames.Description] as string ?? $"{_entityType.DisplayName()} ({_entityType.ClrType.DisplayName()})"; }
             set { (_entityType as IMutableEntityType)?.AddAnnotation(GraphQLAnnotationNames.Description, value); }
         }
 
-        public string DescriptionOrDefault()
-            => Description ?? $"{_entityType.DisplayName()} ({_entityType.ClrType.DisplayName()})";
+        /// <summary>
+        ///     FieldName for plural queries in GraphQL
+        /// </summary>
+        public string PluralFieldName
+        {
+            get { return _entityType[GraphQLAnnotationNames.PluralFieldName] as string ?? FieldName.Pluralize(); }
+            set { (_entityType as IMutableEntityType)?.AddAnnotation(GraphQLAnnotationNames.PluralFieldName, value); }
+        }
+
+        /// <summary>
+        ///     Description of plural field queries in GraphQL
+        /// </summary>
+        public string PluralDescription
+        {
+            get { return _entityType[GraphQLAnnotationNames.PluralDescription] as string ?? Description; }
+            set { (_entityType as IMutableEntityType)?.AddAnnotation(GraphQLAnnotationNames.PluralDescription, value); }
+        }
     }
 }

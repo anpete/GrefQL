@@ -76,6 +76,7 @@ namespace GrefQL.Tests
             using (var db = CreateContext())
             {
                 var schema = db.ExecuteGraphQLQuery(query);
+                Assert.Null(schema.Errors);
                 dynamic data = schema.Data;
                 var result = Assert.IsType<object[]>(data["__schema"]["types"]);
                 var names = new HashSet<string>();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Reflection;
 using GraphQL.Types;
 
 namespace GrefQL.Schema
@@ -16,11 +17,15 @@ namespace GrefQL.Schema
         {
             Func<GraphType> action;
             _cache.TryGetValue(type, out action);
-            if (action == null)
+            if (action != null)
             {
-                return (GraphType)Activator.CreateInstance(type);
+                return action.Invoke();
             }
-            return action.Invoke();
+            if (!typeof(GraphType).IsAssignableFrom(type))
+            {
+                type = typeof(ObjectGraphType<>).MakeGenericType(type);
+            }
+            return (GraphType)Activator.CreateInstance(type);
         }
     }
 }
