@@ -86,6 +86,56 @@ namespace GrefQL.Tests
         }
 
         [Fact]
+        public void Query_customers_by_company_name()
+        {
+            const string query = @"
+                {
+                  customers(contactTitle: ""Sales Representative"") {
+                    customerId
+                    companyName
+                    contactName
+                  }
+                }";
+
+            using (var context = CreateContext())
+            {
+                var result = context.ExecuteGraphQLQuery(query);
+
+                Assert.Null(result.Errors);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+        
+        [Fact]
+        public void Query_customers_by_company_name_and_city()
+        {
+            const string query = @"
+                {
+                  customers(contactTitle: ""Sales Representative"", city: ""London"") {
+                    customerId
+                    companyName
+                    contactName
+                  }
+                }";
+
+            using (var context = CreateContext())
+            {
+                var result = context.ExecuteGraphQLQuery(query);
+
+                Assert.Null(result.Errors);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
+        [Fact]
         public void Introspection()
         {
             const string query = @"{

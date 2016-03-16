@@ -26,6 +26,7 @@ namespace GrefQL.Schema
         {
             var schema = new GraphQL.Types.Schema(_graphTypeResolverSource.Resolve);
             var query = schema.Query = new ObjectGraphType();
+
             foreach (var entityType in model.GetEntityTypes())
             {
                 var boundMethod = _AddEntityType.MakeGenericMethod(entityType.ClrType);
@@ -41,17 +42,26 @@ namespace GrefQL.Schema
                 .GetTypeInfo()
                 .GetDeclaredMethod(nameof(AddEntityType));
 
-        private void AddEntityType<TEntity>(ObjectGraphType query, IEntityType entityType)
+        private void AddEntityType<TEntity>(GraphType query, IEntityType entityType)
         {
             CreateGraphType<TEntity>(entityType);
 
             // TODO ensure this is in a safe format for the schema
             var fieldName = entityType.GraphQL().FieldName;
-            query.AddField<ObjectGraphType<TEntity>>(fieldName, entityType.GraphQL().Description, _resolveFactory.CreateResolveEntityByKey(entityType));
+
+            query.AddField<ObjectGraphType<TEntity>>(
+                fieldName, 
+                entityType.GraphQL().Description,
+                _resolveFactory.CreateResolveEntityByKey(entityType));
 
             var listFieldName = entityType.GraphQL().PluralFieldName;
+
             Debug.Assert(fieldName != listFieldName, "pluralized version cannot match singular version");
-            query.AddField<ListGraphType<ObjectGraphType<TEntity>>>(listFieldName, entityType.GraphQL().PluralDescription, _resolveFactory.CreateResolveEntityList(entityType));
+
+            query.AddField<ListGraphType<ObjectGraphType<TEntity>>>(
+                listFieldName, 
+                entityType.GraphQL().PluralDescription, 
+                _resolveFactory.CreateResolveEntityList(entityType));
         }
 
         private void CreateGraphType<TEntity>(IEntityType entityType)

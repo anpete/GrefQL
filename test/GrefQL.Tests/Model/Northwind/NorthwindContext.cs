@@ -12,8 +12,12 @@ namespace GrefQL.Tests.Model.Northwind
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .Entity<Customer>()
-                .ToTable("Customers");
+                .Entity<Customer>(e =>
+                    {
+                        e.ToTable("Customers");
+                        e.HasIndex(c => c.ContactTitle);
+                        e.HasIndex(c => c.City);
+                    });
 
             modelBuilder
                 .Entity<Order>()

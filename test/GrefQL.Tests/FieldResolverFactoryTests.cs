@@ -143,6 +143,31 @@ namespace GrefQL.Tests
         }
 
         [Fact]
+        public async Task Create_resolver_for_entities_with_filter()
+        {
+            using (var context = CreateContext())
+            {
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+
+                Assert.NotNull(customerType);
+
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
+
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
+
+                var resolveFieldContext = new ResolveFieldContext
+                {
+                    Arguments = new Dictionary<string, object> { ["contactTitle"] = "Sales Representative" },
+                    Source = context
+                };
+
+                var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
+
+                Assert.Equal(17, customers.Length);
+            }
+        }
+
+        [Fact]
         public async Task Create_resolver_for_entities_with_ordering()
         {
             using (var context = CreateContext())

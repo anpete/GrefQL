@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
+// ReSharper disable LoopCanBeConvertedToQuery
+
 // ReSharper disable AccessToModifiedClosure
 
 namespace GrefQL.Query
@@ -77,6 +79,7 @@ namespace GrefQL.Query
                 Name = "Ordering";
                 Description = "Specifies an ordering: A field to order on, and an optional ordering direction.";
 
+                // TODO: Generate an enum for the field names
                 Field<NonNullGraphType<StringGraphType>>(FieldFieldName, "The field to order on.");
                 Field<OrderingDirectionType>(DirectionFieldName, "The optional ordering direction.");
             }
@@ -87,7 +90,8 @@ namespace GrefQL.Query
             var queryEntitiesAsyncCallExpression
                 = Expression.Call(
                     _queryEntitiesAsyncMethodInfo.MakeGenericMethod(entityType.ClrType),
-                    _resolveFieldContextParameterExpression);
+                    _resolveFieldContextParameterExpression,
+                    Expression.Constant(entityType));
 
             var resolveLambdaExpression
                 = Expression
@@ -95,17 +99,30 @@ namespace GrefQL.Query
                         queryEntitiesAsyncCallExpression,
                         _resolveFieldContextParameterExpression);
 
+            var queryArguments = _listArguments.ToList();
+
+            foreach (var property in entityType.GetIndexes().SelectMany(i => i.Properties))
+            {
+                queryArguments.Add(
+                    new QueryArgument(_typeMapper.FindMapping(property))
+                    {
+                        Name = property.GraphQL().FieldName,
+                        Description = property.GraphQL().Description
+                    });
+            }
+
             return new FieldResolver
             {
                 Resolve = resolveLambdaExpression.Compile(),
-                Arguments = new QueryArguments(_listArguments)
+                Arguments = new QueryArguments(queryArguments)
             };
         }
 
         public static MethodInfo _queryEntitiesAsyncMethodInfo
             = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(QueryEntitiesAsync));
 
-        private static Task<TEntity[]> QueryEntitiesAsync<TEntity>(ResolveFieldContext resolveFieldContext)
+        private static Task<TEntity[]> QueryEntitiesAsync<TEntity>(
+            ResolveFieldContext resolveFieldContext, IEntityType entityType)
             where TEntity : class
         {
             var dbContext = resolveFieldContext.Source as DbContext;
@@ -122,9 +139,60 @@ namespace GrefQL.Query
             TryApplyArgument<int>(resolveFieldContext, OffsetArgumentName, offset => query = query.Skip(offset));
             TryApplyArgument<int>(resolveFieldContext, LimitArgumentName, limit => query = query.Take(limit));
 
+            query = TryApplyFilters(resolveFieldContext, query, entityType);
             query = TryApplyOrderBy(resolveFieldContext, query);
 
             return query.ToArrayAsync(resolveFieldContext.CancellationToken);
+        }
+
+        private static IQueryable<TEntity> TryApplyFilters<TEntity>(
+            ResolveFieldContext resolveFieldContext,
+            IQueryable<TEntity> query,
+            IEntityType entityType)
+            where TEntity : class
+        {
+            var entityParameterExpression = Expression.Parameter(typeof(TEntity), "entity");
+
+            Expression predicateExpression = null;
+
+            // TODO: Consider deriving QueryArgument so we don't need entityType here.
+            //       Also consider stashing entityType on the top-level field
+            //       Predicate eval order should probably match argument order
+            foreach (var property in entityType.GetIndexes().SelectMany(i => i.Properties))
+            {
+                TryApplyArgument<string>(resolveFieldContext, property.GraphQL().FieldName, value =>
+                    {
+                        // TODO: Use EF to get propertyInfo
+                        var propertyInfo = typeof(TEntity).GetTypeInfo().GetProperty(property.Name);
+
+                        var propertyExpression
+                            = Expression.MakeMemberAccess(
+                                entityParameterExpression,
+                                propertyInfo);
+
+                        var equalExpression
+                            = Expression.Equal(
+                                propertyExpression,
+                                Expression.Constant(value));
+
+                        predicateExpression
+                            = predicateExpression == null
+                                ? equalExpression
+                                : Expression.AndAlso(predicateExpression, equalExpression);
+                    });
+            }
+
+            if (predicateExpression != null)
+            {
+                var predicateLambda
+                    = Expression.Lambda<Func<TEntity, bool>>(
+                        predicateExpression,
+                        entityParameterExpression);
+
+                query = query.Where(predicateLambda);
+            }
+
+            return query;
         }
 
         private static IQueryable<TEntity> TryApplyOrderBy<TEntity>(
@@ -140,6 +208,8 @@ namespace GrefQL.Query
                     foreach (Dictionary<string, object> ordering in orderBy)
                     {
                         var field = ((string)ordering[FieldFieldName]).ToPascalCase();
+
+                        // TODO: Use EF to get propertyInfo
                         var propertyInfo = typeof(TEntity).GetTypeInfo().GetProperty(field);
 
                         var propertyExpression
