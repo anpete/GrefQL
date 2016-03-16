@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using GraphQL.Types;
+using GrefQL.Types;
 
 namespace GrefQL.Schema
 {

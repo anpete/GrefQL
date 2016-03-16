@@ -7,8 +7,8 @@
     <ProjectGuid>{0EFDB96B-A20C-4D99-90DD-5B739BAD5305}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GrefQL.WebTest</RootNamespace>
-    <AssemblyName>GrefQL.WebTest</AssemblyName>
+    <RootNamespace>GrefQL.WebTests</RootNamespace>
+    <AssemblyName>GrefQL.WebTests</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

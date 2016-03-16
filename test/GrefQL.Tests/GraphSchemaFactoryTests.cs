@@ -3,6 +3,7 @@ using GraphQL.Types;
 using GrefQL.Query;
 using GrefQL.Schema;
 using GrefQL.Tests.Model.Northwind;
+using GrefQL.Types;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Xunit;

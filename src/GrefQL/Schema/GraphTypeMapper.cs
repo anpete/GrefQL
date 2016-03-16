@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GraphQL.Types;
+using GrefQL.Types;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace GrefQL.Schema

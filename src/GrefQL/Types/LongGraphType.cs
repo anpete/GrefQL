@@ -1,6 +1,6 @@
 ﻿using GraphQL.Types;
 
-namespace GrefQL.Schema
+namespace GrefQL.Types
 {
     public class LongGraphType : ScalarGraphType
     {
