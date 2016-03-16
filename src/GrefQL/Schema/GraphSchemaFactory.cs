@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Reflection;
 using GraphQL.Types;
 using GrefQL.Query;
-using Microsoft.EntityFrameworkCore.Internal;
+using GrefQL.Types;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
@@ -30,7 +29,7 @@ namespace GrefQL.Schema
             var query = schema.Query = new ObjectGraphType();
             foreach (var entityType in model.GetEntityTypes())
             {
-                var boundMethod = _CreateGraphType.MakeGenericMethod(entityType.ClrType);
+                var boundMethod = _AddEntityType.MakeGenericMethod(entityType.ClrType);
                 boundMethod.Invoke(this, new object[] { query, entityType });
             }
 
@@ -38,28 +37,27 @@ namespace GrefQL.Schema
         }
 
         // ReSharper disable once InconsistentNaming
-        private static readonly MethodInfo _CreateGraphType
+        private static readonly MethodInfo _AddEntityType
             = typeof(GraphSchemaFactory)
                 .GetTypeInfo()
-                .GetDeclaredMethod(nameof(CreateGraphType));
+                .GetDeclaredMethod(nameof(AddEntityType));
 
-        private void CreateGraphType<TEntity>(ObjectGraphType root, IEntityType entityType)
+        private void AddEntityType<TEntity>(ObjectGraphType schema, IEntityType entityType)
         {
-            var fb = root.Field<ObjectGraphType<TEntity>>()
-                // TODO ensure this is in a safe format for the schema
-                .Name(entityType.DisplayName().ToCamelCase())
-                .Description(entityType.GraphQL().Description ?? $"{entityType.DisplayName()} ({entityType.ClrType.DisplayName(fullName: true)})");
+            CreateGraphType<TEntity>(entityType);
+            
+            // TODO ensure this is in a safe format for the schema
+            var fieldName = entityType.DisplayName().Camelize();
+            var description = entityType.GraphQL().DescriptionOrDefault();
+            schema.AddField<ObjectGraphType<TEntity>>(fieldName, description, _resolveFactory.CreateResolveEntityByKey(entityType));
 
-            var argumentBuilder = ArgumentBuilder(fb.GetType().GetTypeInfo());
+            var listFieldName = fieldName.Pluralize();
+            Debug.Assert(fieldName != listFieldName, "pluralized version cannot match singular version");
+            schema.AddField<ListGraphType<ObjectGraphType<TEntity>>>(listFieldName, description, _resolveFactory.CreateResolveEntityList(entityType));
+        }
 
-            foreach (var arg in CreateArguments(entityType))
-            {
-                var boundMethod = argumentBuilder.MakeGenericMethod(arg.Type);
-                boundMethod.Invoke(fb, new object[] { arg.Name, arg.Description });
-            }
-
-            fb.FieldType.Resolve = _resolveFactory.CreateResolveEntityByKey(entityType);
-
+        private void CreateGraphType<TEntity>(IEntityType entityType)
+        {
             var graphType = new ObjectGraphType<TEntity>();
 
             foreach (var prop in entityType.GetProperties())
@@ -70,45 +68,10 @@ namespace GrefQL.Schema
                     // TODO handle unmapped clr types
                     continue;
                 }
-                var boundMethod = _AddField.MakeGenericMethod(fieldGraphType);
-                boundMethod.Invoke(null, new object[] { graphType, prop });
+                graphType.AddField(fieldGraphType, prop.GraphQL().NameOrDefault(), prop.GraphQL().DescriptionOrDefault());
             }
+
             _graphTypeResolverSource.AddResolver<ObjectGraphType<TEntity>>(() => graphType);
-        }
-
-        // ReSharper disable once InconsistentNaming
-        private static readonly MethodInfo _AddField
-            = typeof(GraphSchemaFactory)
-                .GetTypeInfo()
-                .GetDeclaredMethod(nameof(AddField));
-
-        private static void AddField<TGraphType>(GraphType graphType, IProperty property)
-            where TGraphType : GraphType
-            => graphType.Field<TGraphType>()
-                .Name(property.Name.ToCamelCase())
-                .Description(property.GraphQL().Description
-                             ?? $"{property.DeclaringEntityType.DisplayName()}.{property.Name} ({property.DeclaringEntityType.ClrType.DisplayName(fullName: true)}.{property.Name})");
-
-        private static MethodInfo ArgumentBuilder(TypeInfo fieldBuilder)
-            => fieldBuilder
-                .GetDeclaredMethods("Argument")
-                .Single(m => m.GetParameters().Length == 2);
-
-        private IEnumerable<QueryArgument> CreateArguments(IEntityType entityType)
-        {
-            var primaryKey = entityType.FindPrimaryKey();
-            return primaryKey?.Properties
-                .Select(p => new
-                {
-                    Name = p.Name.ToCamelCase(),
-                    Mapping = _typeMapper.FindMapping(p)
-                })
-                .Where(m => m.Mapping != null)
-                .Select(m =>
-                new QueryArgument(m.Mapping)
-                {
-                    Name = m.Name
-                });
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using GraphQL.Types;
 using GrefQL.Query;
+using GrefQL.Schema;
 using GrefQL.Tests.Model.Northwind;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -20,9 +21,9 @@ namespace GrefQL.Tests
 
                 Assert.NotNull(customerType);
 
-                var fieldResolverFactory = new FieldResolverFactory();
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityByKey(customerType);
+                var resolver = fieldResolverFactory.CreateResolveEntityByKey(customerType).Resolve;
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
@@ -45,9 +46,9 @@ namespace GrefQL.Tests
 
                 Assert.NotNull(orderDetailType);
 
-                var fieldResolverFactory = new FieldResolverFactory();
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityByKey(orderDetailType);
+                var resolver = fieldResolverFactory.CreateResolveEntityByKey(orderDetailType).Resolve;
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
@@ -75,9 +76,9 @@ namespace GrefQL.Tests
 
                 Assert.NotNull(customerType);
 
-                var fieldResolverFactory = new FieldResolverFactory();
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
@@ -99,9 +100,9 @@ namespace GrefQL.Tests
 
                 Assert.NotNull(customerType);
 
-                var fieldResolverFactory = new FieldResolverFactory();
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
@@ -124,9 +125,9 @@ namespace GrefQL.Tests
 
                 Assert.NotNull(customerType);
 
-                var fieldResolverFactory = new FieldResolverFactory();
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
 
                 var resolveFieldContext = new ResolveFieldContext
                 {

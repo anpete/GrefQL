@@ -27,7 +27,9 @@ namespace GrefQL.Query
                 root: context,
                 query: query,
                 operationName: null,
-                inputs: variables?.ToInputs(),
+                inputs: string.IsNullOrEmpty(variables)
+                    ? null
+                    : variables.ToInputs(),
                 cancellationToken: cancellationToken);
     }
 }

@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using GraphQL.Types;
+using GrefQL.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -14,13 +15,32 @@ namespace GrefQL.Query
 {
     public class FieldResolverFactory : IFieldResolverFactory
     {
+        public FieldResolverFactory(IGraphTypeMapper typeMapper)
+        {
+            _typeMapper = typeMapper;
+        }
+
+        private readonly IGraphTypeMapper _typeMapper;
+
         private static readonly ParameterExpression _resolveFieldContextParameterExpression
             = Expression.Parameter(typeof(ResolveFieldContext), "resolveFieldContext");
 
         private static readonly MethodInfo _efPropertyMethodInfo
             = typeof(EF).GetTypeInfo().GetDeclaredMethod(nameof(Property));
 
-        public Func<ResolveFieldContext, object> CreateResolveEntityList(IEntityType entityType)
+        private static readonly List<QueryArgument> ListArguments = new List<QueryArgument>
+        {
+            new QueryArgument<IntGraphType>
+            {
+                Name = "offset"
+            },
+            new QueryArgument<IntGraphType>
+            {
+                Name = "limit"
+            }
+        };
+
+        public FieldResolver CreateResolveEntityList(IEntityType entityType)
         {
             var queryEntitiesAsyncCallExpression
                 = Expression.Call(
@@ -33,7 +53,11 @@ namespace GrefQL.Query
                         queryEntitiesAsyncCallExpression,
                         _resolveFieldContextParameterExpression);
 
-            return resolveLambdaExpression.Compile();
+            return new FieldResolver
+            {
+                Resolve = resolveLambdaExpression.Compile(),
+                Arguments = new QueryArguments(ListArguments)
+            };
         }
 
         public static MethodInfo _queryEntitiesAsyncMethodInfo
@@ -70,7 +94,7 @@ namespace GrefQL.Query
             }
         }
 
-        public Func<ResolveFieldContext, object> CreateResolveEntityByKey(IEntityType entityType)
+        public FieldResolver CreateResolveEntityByKey(IEntityType entityType)
         {
             var entityParameterExpression
                 = Expression.Parameter(entityType.ClrType, "entity");
@@ -80,9 +104,17 @@ namespace GrefQL.Query
 
             Expression predicateExpression = null;
 
+            var keyArguments = new List<QueryArgument> { };
+
             foreach (var keyProperty in entityType.FindPrimaryKey().Properties)
             {
-                var keyPropertyVariableName = keyProperty.Name.ToCamelCase();
+                var keyPropertyVariableName = keyProperty.GraphQL().NameOrDefault();
+                var queryArgument = new QueryArgument(_typeMapper.FindMapping(keyProperty))
+                {
+                    Name = keyPropertyVariableName,
+                    Description = keyProperty.GraphQL().DescriptionOrDefault()
+                };
+                keyArguments.Add(queryArgument);
 
                 var keyVariableExpression
                     = Expression.Variable(keyProperty.ClrType, keyPropertyVariableName);
@@ -137,7 +169,11 @@ namespace GrefQL.Query
                         blockExpression,
                         _resolveFieldContextParameterExpression);
 
-            return resolveLambdaExpression.Compile();
+            return new FieldResolver
+            {
+                Resolve = resolveLambdaExpression.Compile(),
+                Arguments = new QueryArguments(keyArguments)
+            };
         }
 
         public static MethodInfo _getArgumentMethodInfo
