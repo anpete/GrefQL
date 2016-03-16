@@ -39,7 +39,7 @@ namespace GrefQL.Schema
 
         // ReSharper disable once InconsistentNaming
         private static readonly MethodInfo _CreateGraphType
-            = typeof (GraphSchemaFactory)
+            = typeof(GraphSchemaFactory)
                 .GetTypeInfo()
                 .GetDeclaredMethod(nameof(CreateGraphType));
 
@@ -64,7 +64,7 @@ namespace GrefQL.Schema
 
             foreach (var prop in entityType.GetProperties())
             {
-                var fieldGraphType = _typeMapper.FindMapping(prop, notNull: !prop.IsNullable);
+                var fieldGraphType = _typeMapper.FindMapping(prop);
                 if (fieldGraphType == null)
                 {
                     // TODO handle unmapped clr types
@@ -78,7 +78,7 @@ namespace GrefQL.Schema
 
         // ReSharper disable once InconsistentNaming
         private static readonly MethodInfo _AddField
-            = typeof (GraphSchemaFactory)
+            = typeof(GraphSchemaFactory)
                 .GetTypeInfo()
                 .GetDeclaredMethod(nameof(AddField));
 
@@ -86,8 +86,8 @@ namespace GrefQL.Schema
             where TGraphType : GraphType
             => graphType.Field<TGraphType>()
                 .Name(property.Name.ToCamelCase())
-                .Description(property.GraphQL().Description 
-                    ?? $"{property.DeclaringEntityType.DisplayName()}.{property.Name} ({property.DeclaringEntityType.ClrType.DisplayName(fullName: true)}.{property.Name})");
+                .Description(property.GraphQL().Description
+                             ?? $"{property.DeclaringEntityType.DisplayName()}.{property.Name} ({property.DeclaringEntityType.ClrType.DisplayName(fullName: true)}.{property.Name})");
 
         private static MethodInfo ArgumentBuilder(TypeInfo fieldBuilder)
             => fieldBuilder
@@ -97,10 +97,17 @@ namespace GrefQL.Schema
         private IEnumerable<QueryArgument> CreateArguments(IEntityType entityType)
         {
             var primaryKey = entityType.FindPrimaryKey();
-            return primaryKey?.Properties.Select(prop =>
-                new QueryArgument(_typeMapper.FindMapping(prop, notNull: true))
+            return primaryKey?.Properties
+                .Select(p => new
                 {
-                    Name = prop.Name.ToCamelCase()
+                    Name = p.Name.ToCamelCase(),
+                    Mapping = _typeMapper.FindMapping(p)
+                })
+                .Where(m => m.Mapping != null)
+                .Select(m =>
+                new QueryArgument(m.Mapping)
+                {
+                    Name = m.Name
                 });
         }
     }

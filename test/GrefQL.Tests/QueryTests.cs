@@ -83,16 +83,14 @@ namespace GrefQL.Tests
                 {
                     names.Add(t["name"]);
                 }
+                Assert.Contains("Order", names);
                 Assert.Contains("Customer", names);
             }
         }
 
-        public
-            QueryTests(NorthwindFixture
-                northwindFixture,
-                ITestOutputHelper testOutputHelper)
-            :
-                base(northwindFixture, testOutputHelper)
+        public QueryTests(NorthwindFixture northwindFixture,
+            ITestOutputHelper testOutputHelper)
+            : base(northwindFixture, testOutputHelper)
         {
         }
     }

@@ -23,11 +23,11 @@ namespace GrefQL.Schema
             { typeof (DateTimeOffset), typeof (DateGraphType) },
         };
 
-        public Type FindMapping(IProperty property, bool notNull = false)
+        public Type FindMapping(IProperty property)
         {
             Type mapping;
             _map.TryGetValue(property.ClrType.UnwrapNullableType(), out mapping);
-            if ((mapping != null) && notNull)
+            if ((mapping != null) && !property.IsNullable)
             {
                 return typeof (NonNullGraphType<>).MakeGenericType(mapping);
             }

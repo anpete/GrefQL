@@ -1,4 +1,5 @@
-﻿using GraphQL.Types;
+﻿using System;
+using GraphQL.Types;
 using GrefQL.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Xunit;
@@ -7,30 +8,20 @@ namespace GrefQL.Tests
 {
     public class GraphTypeMapperTests
     {
-        [Fact]
-        public void MapsGraphTypes()
+        [Theory]
+        [InlineData(typeof(NonNullGraphType<IntGraphType>), typeof (int), false)]
+        [InlineData(typeof(IntGraphType), typeof (int?), true)]
+        public void MapsTypes(Type expected, Type propertyType, bool isNullable)
         {
             var mapper = new GraphTypeMapper();
             var et = new EntityType("e", new Microsoft.EntityFrameworkCore.Metadata.Internal.Model(), ConfigurationSource.Explicit);
             var prop = new Property("intprop", et, ConfigurationSource.Explicit)
             {
-                ClrType = typeof (int)
+                ClrType = propertyType,
+                IsNullable = isNullable
             };
 
-            Assert.Equal(typeof (IntGraphType), mapper.FindMapping(prop));
-        }
-
-        [Fact]
-        public void MapsNonNullGraphTypes()
-        {
-            var mapper = new GraphTypeMapper();
-            var et = new EntityType("e", new Microsoft.EntityFrameworkCore.Metadata.Internal.Model(), ConfigurationSource.Explicit);
-            var prop = new Property("intprop", et, ConfigurationSource.Explicit)
-            {
-                ClrType = typeof (int)
-            };
-
-            Assert.Equal(typeof (NonNullGraphType<IntGraphType>), mapper.FindMapping(prop, notNull: true));
+            Assert.Equal(expected, mapper.FindMapping(prop));
         }
     }
 }

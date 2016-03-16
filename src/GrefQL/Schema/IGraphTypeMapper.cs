@@ -10,8 +10,7 @@ namespace GrefQL.Schema
         ///     Map <see cref="IProperty.ClrType" /> to an appropriate <see cref="GraphType" />
         /// </summary>
         /// <param name="property"></param>
-        /// <param name="notNull"></param>
         /// <returns>typeof <see cref="GraphType" /></returns>
-        Type FindMapping(IProperty property, bool notNull = false);
+        Type FindMapping(IProperty property);
     }
 }
