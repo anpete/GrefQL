@@ -60,7 +60,7 @@ namespace GrefQL.Schema
             query.AddField<ObjectGraphType<TEntity>>(
                 entityType.GraphQL().FieldName,
                 entityType.GraphQL().Description,
-                _resolveFactory.CreateResolveEntityByKey(entityType));
+                _resolveFactory.CreateResolveEntityList(entityType)); // TODO: This likely no longer works
         }
 
         // ReSharper disable once InconsistentNaming

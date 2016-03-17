@@ -15,7 +15,7 @@ namespace GrefQL.Tests
         {
             const string query = @"
                 query Customer {
-                  customer(customerId: 'ALFKI') {
+                  customers(customerId: 'ALFKI') {
                     customerId
                     companyName
                     contactName

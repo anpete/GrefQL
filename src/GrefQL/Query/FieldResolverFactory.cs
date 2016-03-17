@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -101,7 +100,7 @@ namespace GrefQL.Query
 
             var queryArguments = _listArguments.ToList();
 
-            foreach (var property in entityType.GetIndexes().SelectMany(i => i.Properties))
+            foreach (var property in GetFilterableProperties(entityType))
             {
                 queryArguments.Add(
                     new QueryArgument(_typeMapper.FindMapping(property))
@@ -140,7 +139,7 @@ namespace GrefQL.Query
             TryApplyArgument<int>(resolveFieldContext, LimitArgumentName, limit => query = query.Take(limit));
 
             query = TryApplyFilters(resolveFieldContext, query, entityType);
-            query = TryApplyOrderBy(resolveFieldContext, query);
+            query = TryApplyOrderBy(resolveFieldContext, query, entityType);
 
             return query.ToArrayAsync(resolveFieldContext.CancellationToken);
         }
@@ -158,21 +157,17 @@ namespace GrefQL.Query
             // TODO: Consider deriving QueryArgument so we don't need entityType here.
             //       Also consider stashing entityType on the top-level field
             //       Predicate eval order should probably match argument order
-            foreach (var property in entityType.GetIndexes().SelectMany(i => i.Properties))
+            foreach (var property in GetFilterableProperties(entityType))
             {
-                TryApplyArgument<string>(resolveFieldContext, property.GraphQL().FieldName, value =>
+                TryApplyArgument<object>(resolveFieldContext, property.GraphQL().FieldName, value =>
                     {
-                        // TODO: Use EF to get propertyInfo
-                        var propertyInfo = typeof(TEntity).GetTypeInfo().GetProperty(property.Name);
-
-                        var propertyExpression
-                            = Expression.MakeMemberAccess(
-                                entityParameterExpression,
-                                propertyInfo);
-
                         var equalExpression
                             = Expression.Equal(
-                                propertyExpression,
+                                Expression.Call(
+                                    null,
+                                    _efPropertyMethodInfo.MakeGenericMethod(property.ClrType),
+                                    entityParameterExpression,
+                                    Expression.Constant(property.Name)),
                                 Expression.Constant(value));
 
                         predicateExpression
@@ -195,8 +190,17 @@ namespace GrefQL.Query
             return query;
         }
 
+        private static IEnumerable<IProperty> GetFilterableProperties(IEntityType entityType)
+        {
+            return entityType.GetKeys().SelectMany(i => i.Properties)
+                .Concat(entityType.GetForeignKeys().SelectMany(i => i.Properties))
+                .Concat(entityType.GetIndexes().SelectMany(i => i.Properties));
+        }
+
         private static IQueryable<TEntity> TryApplyOrderBy<TEntity>(
-            ResolveFieldContext resolveFieldContext, IQueryable<TEntity> query)
+            ResolveFieldContext resolveFieldContext,
+            IQueryable<TEntity> query,
+            IEntityType entityType)
             where TEntity : class
         {
             TryApplyArgument<object[]>(resolveFieldContext, OrderByArgumentName, orderBy =>
@@ -208,19 +212,21 @@ namespace GrefQL.Query
                     foreach (Dictionary<string, object> ordering in orderBy)
                     {
                         var field = ((string)ordering[FieldFieldName]).ToPascalCase();
+                        var property = entityType.FindProperty(field);
 
-                        // TODO: Use EF to get propertyInfo
-                        var propertyInfo = typeof(TEntity).GetTypeInfo().GetProperty(field);
-
-                        var propertyExpression
-                            = Expression.MakeMemberAccess(
-                                entityParameterExpression,
-                                propertyInfo);
+                        // TODO: Error case.
 
                         object direction;
                         var descending
                             = ordering.TryGetValue(DirectionFieldName, out direction)
                               && (string)direction == DescendingEnumName;
+
+                        var propertyExpression
+                            = Expression.Call(
+                                null,
+                                _efPropertyMethodInfo.MakeGenericMethod(property.ClrType),
+                                entityParameterExpression,
+                                Expression.Constant(property.Name));
 
                         query = (IQueryable<TEntity>)
                             _applyOrderByMethodInfo
@@ -280,105 +286,5 @@ namespace GrefQL.Query
                 action((TArgument)value);
             }
         }
-
-        public FieldResolver CreateResolveEntityByKey(IEntityType entityType)
-        {
-            var entityParameterExpression
-                = Expression.Parameter(entityType.ClrType, "entity");
-
-            var variableExpressions = new List<ParameterExpression>();
-            var blockExpressions = new List<Expression>();
-
-            Expression predicateExpression = null;
-
-            var keyArguments = new List<QueryArgument>();
-
-            foreach (var keyProperty in entityType.FindPrimaryKey().Properties)
-            {
-                var keyPropertyVariableName = keyProperty.GraphQL().FieldName;
-                var queryArgument = new QueryArgument(_typeMapper.FindMapping(keyProperty))
-                {
-                    Name = keyPropertyVariableName,
-                    Description = keyProperty.GraphQL().Description
-                };
-
-                keyArguments.Add(queryArgument);
-
-                var keyVariableExpression
-                    = Expression.Variable(keyProperty.ClrType, keyPropertyVariableName);
-
-                variableExpressions.Add(keyVariableExpression);
-
-                var assignKeyVariableExpression
-                    = Expression.Assign(
-                        keyVariableExpression,
-                        Expression.Call(
-                            _getArgumentMethodInfo.MakeGenericMethod(keyProperty.ClrType),
-                            _resolveFieldContextParameterExpression,
-                            Expression.Constant(keyPropertyVariableName)));
-
-                blockExpressions.Add(assignKeyVariableExpression);
-
-                var equalExpression
-                    = Expression.Equal(
-                        Expression.Call(
-                            null,
-                            _efPropertyMethodInfo.MakeGenericMethod(keyProperty.ClrType),
-                            entityParameterExpression,
-                            Expression.Constant(keyProperty.Name)),
-                        keyVariableExpression);
-
-                predicateExpression
-                    = predicateExpression == null
-                        ? equalExpression
-                        : Expression.AndAlso(predicateExpression, equalExpression);
-            }
-
-            Debug.Assert(predicateExpression != null);
-
-            var queryEntityByKeyAsyncCallExpression
-                = Expression.Call(
-                    _queryEntityByKeyAsyncMethodInfo.MakeGenericMethod(entityType.ClrType),
-                    _resolveFieldContextParameterExpression,
-                    Expression.Quote(
-                        Expression.Lambda(
-                            predicateExpression,
-                            entityParameterExpression)));
-
-            blockExpressions.Add(queryEntityByKeyAsyncCallExpression);
-
-            // TODO: Remove closure here
-            var blockExpression
-                = Expression.Block(variableExpressions, blockExpressions);
-
-            var resolveLambdaExpression
-                = Expression
-                    .Lambda<Func<ResolveFieldContext, object>>(
-                        blockExpression,
-                        _resolveFieldContextParameterExpression);
-
-            return new FieldResolver
-            {
-                Resolve = resolveLambdaExpression.Compile(),
-                Arguments = new QueryArguments(keyArguments)
-            };
-        }
-
-        public static MethodInfo _getArgumentMethodInfo
-            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(GetArgument));
-
-        private static TArgument GetArgument<TArgument>(ResolveFieldContext resolveFieldContext, string name)
-            => (TArgument)resolveFieldContext.Arguments[name];
-
-        public static MethodInfo _queryEntityByKeyAsyncMethodInfo
-            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(QueryEntityByKeyAsync));
-
-        private static Task<TEntity> QueryEntityByKeyAsync<TEntity>(
-            ResolveFieldContext resolveFieldContext,
-            Expression<Func<TEntity, bool>> predicate)
-            where TEntity : class
-            => (resolveFieldContext.Source as DbContext)?
-                .Set<TEntity>()
-                .SingleOrDefaultAsync(predicate, resolveFieldContext.CancellationToken);
     }
 }

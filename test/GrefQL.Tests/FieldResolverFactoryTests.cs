@@ -24,7 +24,7 @@ namespace GrefQL.Tests
 
                 var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityByKey(customerType).Resolve;
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
@@ -32,7 +32,7 @@ namespace GrefQL.Tests
                     Source = context
                 };
 
-                var customer = await (Task<Customer>)resolver(resolveFieldContext);
+                var customer = (await (Task<Customer[]>)resolver(resolveFieldContext)).Single();
 
                 Assert.Equal("ALFKI", customer.CustomerId);
             }
@@ -49,7 +49,7 @@ namespace GrefQL.Tests
 
                 var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityByKey(orderDetailType).Resolve;
+                var resolver = fieldResolverFactory.CreateResolveEntityList(orderDetailType).Resolve;
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
@@ -61,7 +61,7 @@ namespace GrefQL.Tests
                     Source = context
                 };
 
-                var orderDetail = await (Task<OrderDetail>)resolver(resolveFieldContext);
+                var orderDetail = (await (Task<OrderDetail[]>)resolver(resolveFieldContext)).Single();
 
                 Assert.Equal(10248, orderDetail.OrderId);
                 Assert.Equal(11, orderDetail.ProductId);
