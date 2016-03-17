@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using GraphQL.Types;
 using GrefQL.Schema;
@@ -103,7 +105,7 @@ namespace GrefQL.Query
             foreach (var property in GetFilterableProperties(entityType))
             {
                 queryArguments.Add(
-                    new QueryArgument(_typeMapper.FindMapping(property))
+                    new QueryArgument(_typeMapper.FindMapping(property, notNull: true))
                     {
                         Name = property.GraphQL().FieldName,
                         Description = property.GraphQL().Description
@@ -124,7 +126,7 @@ namespace GrefQL.Query
             ResolveFieldContext resolveFieldContext, IEntityType entityType)
             where TEntity : class
         {
-            var dbContext = resolveFieldContext.Source as DbContext;
+            var dbContext = resolveFieldContext.Source as DbContext ?? resolveFieldContext.RootValue as DbContext;
 
             if (dbContext == null)
             {
@@ -143,6 +145,14 @@ namespace GrefQL.Query
 
             return query.ToArrayAsync(resolveFieldContext.CancellationToken);
         }
+
+        public static MethodInfo _queryEntitiesMethodInfo
+             = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(QueryEntities));
+
+        private static TEntity[] QueryEntities<TEntity>(
+            ResolveFieldContext resolveFieldContext, IEntityType entityType)
+            where TEntity : class
+            => QueryEntitiesAsync<TEntity>(resolveFieldContext, entityType).GetAwaiter().GetResult();
 
         private static IQueryable<TEntity> TryApplyFilters<TEntity>(
             ResolveFieldContext resolveFieldContext,
@@ -285,6 +295,88 @@ namespace GrefQL.Query
             {
                 action((TArgument)value);
             }
+        }
+
+        private static readonly MethodInfo _tryAddArgumentFromSource
+            = typeof (FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(TryAddArgumentFromSource));
+
+        private static void TryAddArgumentFromSource(
+          ResolveFieldContext resolveFieldContext,
+          string argument,
+          IClrPropertyGetter getter)
+        {
+            if (resolveFieldContext.Arguments == null)
+            {
+                resolveFieldContext.Arguments = new Dictionary<string, object>();
+            }
+            try
+            {
+                var value = getter.GetClrValue(resolveFieldContext.Source);
+                resolveFieldContext.Arguments[argument] = value;
+            }
+            catch
+            {
+            }
+        }
+
+        private static readonly PropertyInfo _contextArgumentsPropertyInfo
+            = typeof (ResolveFieldContext).GetTypeInfo().GetDeclaredProperty(nameof(ResolveFieldContext.Arguments));
+
+        private static readonly PropertyInfo _contextArgumentsItemPropertyInfo
+            = typeof(Dictionary<string, object>).GetTypeInfo().GetDeclaredProperty("Item");
+
+        public FieldResolver CreateResolveNavigation(INavigation navigation)
+        {
+            var sourceProps = navigation.ForeignKey.Properties;
+            var targetProps = navigation.ForeignKey.PrincipalKey.Properties;
+
+            if (!navigation.IsDependentToPrincipal())
+            {
+                var tmp = targetProps;
+                targetProps = sourceProps;
+                sourceProps = tmp;
+            }
+
+            var blockExpressions = new List<Expression>();
+            
+            for (var i = 0; i < sourceProps.Count; i++)
+            {
+                var sourceProp = sourceProps[i];
+                var targetProp = targetProps[i];
+
+                var assignArgumentExpression
+                    = Expression.Call(_tryAddArgumentFromSource,
+                        _resolveFieldContextParameterExpression,
+                        Expression.Constant(targetProp.GraphQL().FieldName),
+                        Expression.Constant(sourceProp.GetGetter()));
+
+                blockExpressions.Add(assignArgumentExpression);
+            }
+
+            Expression queryEntitiesCallExpression
+                = Expression.Call(
+                    _queryEntitiesMethodInfo.MakeGenericMethod(navigation.GetTargetType().ClrType),
+                    _resolveFieldContextParameterExpression,
+                    Expression.Constant(navigation.GetTargetType()));
+
+            if (!navigation.IsCollection())
+            {
+                queryEntitiesCallExpression = Expression.ArrayIndex(queryEntitiesCallExpression, Expression.Constant(0));
+            }
+
+            blockExpressions.Add(queryEntitiesCallExpression);
+
+            var blockExpression = Expression.Block(blockExpressions);
+
+            var resolveLambdaExpression = Expression
+                .Lambda<Func<ResolveFieldContext, object>>(
+                    blockExpression,
+                    _resolveFieldContextParameterExpression);
+
+            return new FieldResolver
+            {
+                Resolve = resolveLambdaExpression.Compile(),
+            };
         }
     }
 }

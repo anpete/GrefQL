@@ -135,6 +135,66 @@ namespace GrefQL.Tests
             }
         }
 
+
+        [Fact]
+        public void Query_customer_with_orders()
+        {
+            const string query = @"
+                {
+                  customers(customerId: ""ALFKI"") {
+                    customerId
+                    companyName
+                    contactName
+                    orders {
+                        orderId
+                        orderDate   
+                    }
+                  }
+                }";
+
+            using (var context = CreateContext())
+            {
+                var result = context.ExecuteGraphQLQuery(query);
+
+                Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
+
+        [Fact]
+        public void Query_orders_with_customer()
+        {
+            const string query = @"
+                {
+                   orders(limit: 2) {
+                      orderId
+                      customer {
+                          customerName
+                          contactName
+                      }
+                   }
+                }";
+
+            using (var context = CreateContext())
+            {
+                var result = context.ExecuteGraphQLQuery(query);
+
+                Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
         [Fact]
         public void Introspection()
         {

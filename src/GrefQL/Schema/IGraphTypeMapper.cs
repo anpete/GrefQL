@@ -11,6 +11,6 @@ namespace GrefQL.Schema
         /// </summary>
         /// <param name="property"></param>
         /// <returns>typeof <see cref="GraphType" /></returns>
-        Type FindMapping(IProperty property);
+        Type FindMapping(IProperty property, bool notNull = false);
     }
 }

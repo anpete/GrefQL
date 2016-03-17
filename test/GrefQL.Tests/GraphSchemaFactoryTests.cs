@@ -56,13 +56,6 @@ namespace GrefQL.Tests
             var graph = factory.Create(modelBuilder.Model);
 
             Assert.Collection(graph.Query.Fields,
-                customer =>
-                    {
-                        Assert.Equal("customer", customer.Name);
-                        Assert.Equal(typeof(ObjectGraphType<Customer>), customer.Type);
-                        Assert.NotEmpty(customer.Arguments);
-                        Assert.NotNull(customer.Resolve);
-                    },
                 list =>
                     {
                         Assert.Equal("customers", list.Name);

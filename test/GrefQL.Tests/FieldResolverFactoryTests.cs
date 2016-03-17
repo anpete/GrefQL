@@ -79,14 +79,15 @@ namespace GrefQL.Tests
 
                 var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
-                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
+                var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
+                Assert.All(resolver.Arguments, arg => Assert.False(typeof(NonNullGraphType).IsAssignableFrom(arg.Type)));
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
                     Source = context
                 };
 
-                var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
+                var customers = await (Task<Customer[]>)resolver.Resolve(resolveFieldContext);
 
                 Assert.Equal(91, customers.Length);
             }
@@ -139,6 +140,76 @@ namespace GrefQL.Tests
                 var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
 
                 Assert.Equal(1, customers.Length);
+            }
+        }
+
+        [Fact]
+        public async Task Create_resolver_for_one_to_many_from_dependent()
+        {
+            using (var context = CreateContext())
+            {
+                var orderType = context.Model.FindEntityType(typeof (Order));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var orderToCustomer = Assert.Single(orderType.GetNavigations());
+                Assert.Equal(customerType, orderToCustomer.GetTargetType());
+
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
+
+                var orderResolver = fieldResolverFactory.CreateResolveEntityList(orderType).Resolve;
+
+                var orderContext = new ResolveFieldContext
+                {
+                    Arguments = new Dictionary<string, object> { ["orderId"] = 10248 },
+                    Source = context
+                };
+                var order = Assert.Single(await (Task<Order[]>)orderResolver(orderContext));
+
+                var customerResolver = fieldResolverFactory.CreateResolveNavigation(orderToCustomer).Resolve;
+
+                var resolveFieldContext = new ResolveFieldContext
+                {
+                    RootValue = context,
+                    Source = order,
+                    Arguments = new Dictionary<string, object>()
+                };
+
+                var customer = (Customer)customerResolver(resolveFieldContext);
+                Assert.Equal("VINET", customer.CustomerId);
+            }
+        }
+
+        [Fact]
+        public async Task Create_resolver_for_one_to_many_from_principal()
+        {
+            using (var context = CreateContext())
+            {
+                var orderType = context.Model.FindEntityType(typeof(Order));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerToOrder = Assert.Single(customerType.GetNavigations());
+                Assert.Equal(orderType, customerToOrder.GetTargetType());
+
+                var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
+
+                var customerResolver = fieldResolverFactory.CreateResolveEntityList(customerType).Resolve;
+
+                var customerContext = new ResolveFieldContext
+                {
+                    Arguments = new Dictionary<string, object> { ["customerId"] = "VINET" },
+                    Source = context
+                };
+                var customer = Assert.Single(await (Task<Customer[]>)customerResolver(customerContext));
+
+                var resolver = fieldResolverFactory.CreateResolveNavigation(customerToOrder).Resolve;
+
+                var ordersContext = new ResolveFieldContext
+                {
+                    RootValue = context,
+                    Source = customer,
+                    Arguments = new Dictionary<string, object>()
+                };
+
+                var orders = (Order[])resolver(ordersContext);
+                Assert.Contains(orders, o=> o.OrderId == 10248 );
             }
         }
 

@@ -31,8 +31,7 @@ namespace GrefQL.Schema
 
             foreach (var entityType in model.GetEntityTypes())
             {
-                AddEntityType(entityType.ClrType, query, entityType);
-                AddEntityTypeCollection(entityType.ClrType, query, entityType);
+                AddEntityCollectionField(entityType.ClrType, query, entityType, _resolveFactory.CreateResolveEntityList(entityType));
             }
 
             return schema;
@@ -42,16 +41,16 @@ namespace GrefQL.Schema
         private static readonly MethodInfo _AddEntityType
             = typeof (GraphSchemaFactory)
                 .GetTypeInfo()
-                .GetDeclaredMethods(nameof(AddEntityType))
+                .GetDeclaredMethods(nameof(AddEntityField))
                 .Single(m => m.ContainsGenericParameters);
 
-        private void AddEntityType(Type clrType, GraphType query, IEntityType entityType)
+        private void AddEntityField(Type clrType, GraphType query, IEntityType entityType, FieldResolver resolver)
         {
             var boundMethod = _AddEntityType.MakeGenericMethod(clrType);
-            boundMethod.Invoke(this, new object[] { query, entityType });
+            boundMethod.Invoke(this, new object[] { query, entityType, resolver });
         }
 
-        private void AddEntityType<TEntity>(GraphType query, IEntityType entityType)
+        private void AddEntityField<TEntity>(GraphType query, IEntityType entityType, FieldResolver resolver)
             where TEntity : class
         {
             CreateGraphType<TEntity>(entityType);
@@ -60,23 +59,23 @@ namespace GrefQL.Schema
             query.AddField<ObjectGraphType<TEntity>>(
                 entityType.GraphQL().FieldName,
                 entityType.GraphQL().Description,
-                _resolveFactory.CreateResolveEntityList(entityType)); // TODO: This likely no longer works
+                resolver);
         }
 
         // ReSharper disable once InconsistentNaming
         private static readonly MethodInfo _AddEntityTypeCollection
             = typeof (GraphSchemaFactory)
                 .GetTypeInfo()
-                .GetDeclaredMethods(nameof(AddEntityTypeCollection))
+                .GetDeclaredMethods(nameof(AddEntityCollectionField))
                 .Single(m => m.ContainsGenericParameters);
 
-        private void AddEntityTypeCollection(Type clrType, GraphType query, IEntityType entityType)
+        private void AddEntityCollectionField(Type clrType, GraphType query, IEntityType entityType, FieldResolver resolver)
         {
             var boundMethod = _AddEntityTypeCollection.MakeGenericMethod(clrType);
-            boundMethod.Invoke(this, new object[] { query, entityType });
+            boundMethod.Invoke(this, new object[] { query, entityType, resolver });
         }
 
-        private void AddEntityTypeCollection<TEntity>(GraphType query, IEntityType entityType)
+        private void AddEntityCollectionField<TEntity>(GraphType query, IEntityType entityType, FieldResolver resolver)
             where TEntity : class
         {
             CreateGraphType<TEntity>(entityType);
@@ -86,7 +85,7 @@ namespace GrefQL.Schema
             query.AddField<ListGraphType<ObjectGraphType<TEntity>>>(
                 listFieldName,
                 entityType.GraphQL().PluralDescription,
-                _resolveFactory.CreateResolveEntityList(entityType));
+                resolver);
         }
 
         private GraphType CreateGraphType<TEntity>(IEntityType entityType)
@@ -112,20 +111,25 @@ namespace GrefQL.Schema
                 graphType.AddField(fieldGraphType, prop.GraphQL().FieldName, prop.GraphQL().Description);
             }
 
-            foreach (var navProp in entityType.GetNavigations())
+            foreach (var nav in entityType.GetNavigations())
             {
-                var principalEntityType = navProp.GetTargetType();
-                if (navProp.IsCollection())
-                {
-                    AddEntityTypeCollection(principalEntityType.ClrType, graphType, principalEntityType);
-                }
-                else
-                {
-                    AddEntityType(principalEntityType.ClrType, graphType, principalEntityType);
-                }
+                AddNavigation(nav, graphType);
             }
 
             return graphType;
+        }
+
+        private void AddNavigation(INavigation navigation, GraphType declaringType)
+        {
+            var target = navigation.GetTargetType();
+            if (navigation.IsCollection())
+            {
+                AddEntityCollectionField(target.ClrType, declaringType, target, _resolveFactory.CreateResolveNavigation(navigation));
+            }
+            else
+            {
+                AddEntityField(target.ClrType, declaringType, target, _resolveFactory.CreateResolveNavigation(navigation));
+            }
         }
     }
 }
