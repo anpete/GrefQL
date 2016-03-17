@@ -131,7 +131,7 @@ namespace GrefQL.Query
                 return null;
             }
 
-            IQueryable<TEntity> query = dbContext.Set<TEntity>();
+            var query = dbContext.Set<TEntity>().AsNoTracking();
 
             // TODO: Probably need a GraphQL->LINQ query cache here.
 
