@@ -338,7 +338,7 @@ namespace GrefQL.Query
             }
 
             var blockExpressions = new List<Expression>();
-            
+
             for (var i = 0; i < sourceProps.Count; i++)
             {
                 var sourceProp = sourceProps[i];
