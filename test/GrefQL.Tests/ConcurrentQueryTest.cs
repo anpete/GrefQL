@@ -7,7 +7,7 @@ namespace GrefQL.Tests
 {
     public class ConcurrentQueryTest : NorthwindTestsBase
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/anpete/GrefQL/issues/12")]
         public void ItDoesntThrowConcurrencyError()
         {
             const string query = @"{
