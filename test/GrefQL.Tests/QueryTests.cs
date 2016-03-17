@@ -27,6 +27,7 @@ namespace GrefQL.Tests
                 var result = context.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
 
                 var jsonResult = new DocumentWriter().Write(result);
 
@@ -52,6 +53,7 @@ namespace GrefQL.Tests
                 var result = context.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
 
                 var jsonResult = new DocumentWriter().Write(result);
 
@@ -77,6 +79,7 @@ namespace GrefQL.Tests
                 var result = context.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
 
                 var jsonResult = new DocumentWriter().Write(result);
 
@@ -102,6 +105,7 @@ namespace GrefQL.Tests
                 var result = context.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
 
                 var jsonResult = new DocumentWriter().Write(result);
 
@@ -127,6 +131,7 @@ namespace GrefQL.Tests
                 var result = context.ExecuteGraphQLQuery(query);
 
                 Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
 
                 var jsonResult = new DocumentWriter().Write(result);
 

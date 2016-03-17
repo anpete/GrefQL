@@ -18,7 +18,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -29,7 +29,7 @@ namespace GrefQL.Tests
                 var resolveFieldContext = new ResolveFieldContext
                 {
                     Arguments = new Dictionary<string, object> { ["customerId"] = "ALFKI" },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customer = (await (Task<Customer[]>)resolver(resolveFieldContext)).Single();
@@ -43,7 +43,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var orderDetailType = context.Model.FindEntityType(typeof(OrderDetail));
+                var orderDetailType = context.Model.FindEntityType(typeof (OrderDetail));
 
                 Assert.NotNull(orderDetailType);
 
@@ -58,7 +58,7 @@ namespace GrefQL.Tests
                         ["orderId"] = 10248,
                         ["productId"] = 11
                     },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var orderDetail = (await (Task<OrderDetail[]>)resolver(resolveFieldContext)).Single();
@@ -73,18 +73,18 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
                 var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
                 var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
-                Assert.All(resolver.Arguments, arg => Assert.False(typeof(NonNullGraphType).IsAssignableFrom(arg.Type)));
+                Assert.All(resolver.Arguments, arg => Assert.False(typeof (NonNullGraphType).IsAssignableFrom(arg.Type)));
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customers = await (Task<Customer[]>)resolver.Resolve(resolveFieldContext);
@@ -98,7 +98,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -109,7 +109,7 @@ namespace GrefQL.Tests
                 var resolveFieldContext = new ResolveFieldContext
                 {
                     Arguments = new Dictionary<string, object> { ["limit"] = 10 },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
@@ -123,7 +123,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -134,7 +134,7 @@ namespace GrefQL.Tests
                 var resolveFieldContext = new ResolveFieldContext
                 {
                     Arguments = new Dictionary<string, object> { ["offset"] = 90 },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
@@ -149,7 +149,7 @@ namespace GrefQL.Tests
             using (var context = CreateContext())
             {
                 var orderType = context.Model.FindEntityType(typeof (Order));
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
                 var orderToCustomer = Assert.Single(orderType.GetNavigations());
                 Assert.Equal(customerType, orderToCustomer.GetTargetType());
 
@@ -160,7 +160,7 @@ namespace GrefQL.Tests
                 var orderContext = new ResolveFieldContext
                 {
                     Arguments = new Dictionary<string, object> { ["orderId"] = 10248 },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
                 var order = Assert.Single(await (Task<Order[]>)orderResolver(orderContext));
 
@@ -168,12 +168,12 @@ namespace GrefQL.Tests
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
-                    RootValue = context,
+                    RootValue = new QueryExecutionContext {DbContext = context},
                     Source = order,
                     Arguments = new Dictionary<string, object>()
                 };
 
-                var customer = (Customer)customerResolver(resolveFieldContext);
+                var customer = await (Task<Customer>)customerResolver(resolveFieldContext);
                 Assert.Equal("VINET", customer.CustomerId);
             }
         }
@@ -183,8 +183,8 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var orderType = context.Model.FindEntityType(typeof(Order));
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var orderType = context.Model.FindEntityType(typeof (Order));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
                 var customerToOrder = Assert.Single(customerType.GetNavigations());
                 Assert.Equal(orderType, customerToOrder.GetTargetType());
 
@@ -195,7 +195,7 @@ namespace GrefQL.Tests
                 var customerContext = new ResolveFieldContext
                 {
                     Arguments = new Dictionary<string, object> { ["customerId"] = "VINET" },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
                 var customer = Assert.Single(await (Task<Customer[]>)customerResolver(customerContext));
 
@@ -203,13 +203,13 @@ namespace GrefQL.Tests
 
                 var ordersContext = new ResolveFieldContext
                 {
-                    RootValue = context,
+                    RootValue = new QueryExecutionContext {DbContext = context},
                     Source = customer,
                     Arguments = new Dictionary<string, object>()
                 };
 
-                var orders = (Order[])resolver(ordersContext);
-                Assert.Contains(orders, o=> o.OrderId == 10248 );
+                var orders = await (Task<Order[]>)resolver(ordersContext);
+                Assert.Contains(orders, o => o.OrderId == 10248);
             }
         }
 
@@ -218,7 +218,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -229,7 +229,7 @@ namespace GrefQL.Tests
                 var resolveFieldContext = new ResolveFieldContext
                 {
                     Arguments = new Dictionary<string, object> { ["contactTitle"] = "Sales Representative" },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
@@ -243,7 +243,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -260,7 +260,7 @@ namespace GrefQL.Tests
                             new Dictionary<string, object> { ["field"] = "companyName" }
                         }
                     },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
@@ -276,7 +276,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -297,7 +297,7 @@ namespace GrefQL.Tests
                             }
                         }
                     },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customers = await (Task<Customer[]>)resolver(resolveFieldContext);
@@ -313,7 +313,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof(Customer));
+                var customerType = context.Model.FindEntityType(typeof (Customer));
 
                 Assert.NotNull(customerType);
 
@@ -339,7 +339,7 @@ namespace GrefQL.Tests
                             }
                         }
                     },
-                    Source = context
+                    RootValue = new QueryExecutionContext { DbContext = context }
                 };
 
                 var customers = await (Task<Customer[]>)resolver(resolveFieldContext);

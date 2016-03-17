@@ -20,7 +20,10 @@ namespace GrefQL.Query
         public Task<ExecutionResult> ExecuteAsync(DbContext context, string query, string variables = null, string operationName = null, CancellationToken cancellationToken = default(CancellationToken))
             => _executor.ExecuteAsync(
                 schema: _schema,
-                root: context,
+                root: new QueryExecutionContext
+                {
+                    DbContext = context
+                },
                 query: query,
                 operationName: operationName,
                 inputs: string.IsNullOrEmpty(variables)

@@ -154,6 +154,7 @@
   <ItemGroup>
     <Compile Include="DbContextExtension.cs" />
     <Compile Include="DbContextOptionsBuilderExtensions.cs" />
+    <Compile Include="Query\QueryExecutionContext.cs" />
     <Compile Include="GraphQLOptionsExtension.cs" />
     <Compile Include="Metadata\GraphQLPropertyAnnotations.cs" />
     <Compile Include="Metadata\GraphQLEntityTypeAnnotations.cs" />

@@ -190,6 +190,7 @@
     <Compile Include="Model\Northwind\Product.cs" />
     <Compile Include="NorthwindFixture.cs" />
     <Compile Include="NorthwindTestsBase.cs" />
+    <Compile Include="ConcurrentQueryTest.cs" />
     <Compile Include="QueryTests.cs" />
     <Compile Include="TestOutputHelperLoggerProvider.cs" />
   </ItemGroup>
