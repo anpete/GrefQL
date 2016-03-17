@@ -86,14 +86,7 @@ namespace GrefQL.Utilities
             }
 
             public string Apply(string word)
-            {
-                if (!_regex.IsMatch(word))
-                {
-                    return null;
-                }
-
-                return _regex.Replace(word, _replacement);
-            }
+                => !_regex.IsMatch(word) ? null : _regex.Replace(word, _replacement);
         }
 
         private static void AddIrregular(string singular, string plural)
@@ -102,36 +95,21 @@ namespace GrefQL.Utilities
             AddSingular("(" + plural[0] + ")" + plural.Substring(1) + "$", "$1" + singular.Substring(1));
         }
 
-        private static void AddUncountable(string word)
-        {
-            _uncountables.Add(word.ToLower());
-        }
+        private static void AddUncountable(string word) => _uncountables.Add(word.ToLower());
 
-        private static void AddPlural(string rule, string replacement)
-        {
-            _plurals.Add(new Rule(rule, replacement));
-        }
+        private static void AddPlural(string rule, string replacement) => _plurals.Add(new Rule(rule, replacement));
 
-        private static void AddSingular(string rule, string replacement)
-        {
-            _singulars.Add(new Rule(rule, replacement));
-        }
+        private static void AddSingular(string rule, string replacement) => _singulars.Add(new Rule(rule, replacement));
 
         private static readonly List<Rule> _plurals = new List<Rule>();
         private static readonly List<Rule> _singulars = new List<Rule>();
         private static readonly List<string> _uncountables = new List<string>();
 
-        public static string Pluralize(this string word)
-        {
-            return ApplyRules(_plurals, word);
-        }
+        public static string Pluralize(this string word) => ApplyRules(_plurals, word);
 
-        public static string Singularize(this string word)
-        {
-            return ApplyRules(_singulars, word);
-        }
+        public static string Singularize(this string word) => ApplyRules(_singulars, word);
 
-        private static string ApplyRules(List<Rule> rules, string word)
+        private static string ApplyRules(IReadOnlyList<Rule> rules, string word)
         {
             var result = word;
 
@@ -152,52 +130,32 @@ namespace GrefQL.Utilities
         public static string Titleize(this string word)
         {
             return Regex.Replace(Humanize(Underscore(word)), @"\b([a-z])",
-                delegate(Match match) { return match.Captures[0].Value.ToUpper(); });
+                match => match.Captures[0].Value.ToUpper());
         }
 
         public static string Humanize(this string lowercaseAndUnderscoredWord)
-        {
-            return Capitalize(Regex.Replace(lowercaseAndUnderscoredWord, @"_", " "));
-        }
+            => Capitalize(Regex.Replace(lowercaseAndUnderscoredWord, "_", " "));
 
         public static string Pascalize(this string lowercaseAndUnderscoredWord)
         {
             return Regex.Replace(lowercaseAndUnderscoredWord, "(?:^|_)(.)",
-                delegate(Match match) { return match.Groups[1].Value.ToUpper(); });
+                match => match.Groups[1].Value.ToUpper());
         }
 
-        public static string Camelize(this string lowercaseAndUnderscoredWord)
-        {
-            return Uncapitalize(Pascalize(lowercaseAndUnderscoredWord));
-        }
+        public static string Camelize(this string lowercaseAndUnderscoredWord) => Uncapitalize(Pascalize(lowercaseAndUnderscoredWord));
 
-        public static string Underscore(this string pascalCasedWord)
-        {
-            return Regex.Replace(
-                Regex.Replace(
-                    Regex.Replace(pascalCasedWord, @"([A-Z]+)([A-Z][a-z])", "$1_$2"), @"([a-z\d])([A-Z])",
-                    "$1_$2"), @"[-\s]", "_").ToLower();
-        }
+        public static string Underscore(this string pascalCasedWord) => Regex.Replace(
+            Regex.Replace(
+                Regex.Replace(pascalCasedWord, "([A-Z]+)([A-Z][a-z])", "$1_$2"), @"([a-z\d])([A-Z])",
+                "$1_$2"), @"[-\s]", "_").ToLower();
 
-        public static string Capitalize(this string word)
-        {
-            return word.Substring(0, 1).ToUpper() + word.Substring(1).ToLower();
-        }
+        public static string Capitalize(this string word) => word.Substring(0, 1).ToUpper() + word.Substring(1).ToLower();
 
-        public static string Uncapitalize(this string word)
-        {
-            return word.Substring(0, 1).ToLower() + word.Substring(1);
-        }
+        public static string Uncapitalize(this string word) => word.Substring(0, 1).ToLower() + word.Substring(1);
 
-        public static string Ordinalize(this string numberString)
-        {
-            return Ordanize(int.Parse(numberString), numberString);
-        }
+        public static string Ordinalize(this string numberString) => Ordanize(int.Parse(numberString), numberString);
 
-        public static string Ordinalize(this int number)
-        {
-            return Ordanize(number, number.ToString());
-        }
+        public static string Ordinalize(this int number) => Ordanize(number, number.ToString());
 
         private static string Ordanize(int number, string numberString)
         {
@@ -222,9 +180,6 @@ namespace GrefQL.Utilities
             }
         }
 
-        public static string Dasherize(this string underscoredWord)
-        {
-            return underscoredWord.Replace('_', '-');
-        }
+        public static string Dasherize(this string underscoredWord) => underscoredWord.Replace('_', '-');
     }
 }
