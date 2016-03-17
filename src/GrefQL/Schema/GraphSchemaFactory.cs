@@ -39,7 +39,7 @@ namespace GrefQL.Schema
 
         // ReSharper disable once InconsistentNaming
         private static readonly MethodInfo _AddEntityType
-            = typeof (GraphSchemaFactory)
+            = typeof(GraphSchemaFactory)
                 .GetTypeInfo()
                 .GetDeclaredMethods(nameof(AddEntityField))
                 .Single(m => m.ContainsGenericParameters);
@@ -64,7 +64,7 @@ namespace GrefQL.Schema
 
         // ReSharper disable once InconsistentNaming
         private static readonly MethodInfo _AddEntityTypeCollection
-            = typeof (GraphSchemaFactory)
+            = typeof(GraphSchemaFactory)
                 .GetTypeInfo()
                 .GetDeclaredMethods(nameof(AddEntityCollectionField))
                 .Single(m => m.ContainsGenericParameters);

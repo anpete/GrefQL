@@ -17,7 +17,7 @@ namespace GrefQL.Schema
             where T : GraphType
         {
             graphType = default(T);
-            if (!source.Contains(typeof (T)))
+            if (!source.Contains(typeof(T)))
             {
                 return false;
             }

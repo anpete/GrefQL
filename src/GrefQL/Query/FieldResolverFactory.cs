@@ -35,10 +35,10 @@ namespace GrefQL.Query
         private readonly IGraphTypeMapper _typeMapper;
 
         private static readonly ParameterExpression _resolveFieldContextParameterExpression
-            = Expression.Parameter(typeof (ResolveFieldContext), "resolveFieldContext");
+            = Expression.Parameter(typeof(ResolveFieldContext), "resolveFieldContext");
 
         private static readonly MethodInfo _efPropertyMethodInfo
-            = typeof (EF).GetTypeInfo().GetDeclaredMethod(nameof(Property));
+            = typeof(EF).GetTypeInfo().GetDeclaredMethod(nameof(Property));
 
         private static readonly List<QueryArgument> _listArguments = new List<QueryArgument>
         {
@@ -118,7 +118,7 @@ namespace GrefQL.Query
         }
 
         private static readonly MethodInfo _toArrayAsyncMethodInfo
-            = typeof (FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(ToArrayAsync));
+            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(ToArrayAsync));
 
         private static Task<TEntity[]> ToArrayAsync<TEntity>(
             ResolveFieldContext resolveFieldContext, IEntityType entityType)
@@ -127,7 +127,7 @@ namespace GrefQL.Query
                 .ToArrayAsync(resolveFieldContext.CancellationToken);
 
         private static readonly MethodInfo _singleAsyncMethodInfo
-            = typeof (FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(SingleAsync));
+            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(SingleAsync));
 
         private static Task<TEntity> SingleAsync<TEntity>(
             ResolveFieldContext resolveFieldContext, IEntityType entityType)
@@ -162,7 +162,7 @@ namespace GrefQL.Query
             IEntityType entityType)
             where TEntity : class
         {
-            var entityParameterExpression = Expression.Parameter(typeof (TEntity), "entity");
+            var entityParameterExpression = Expression.Parameter(typeof(TEntity), "entity");
 
             Expression predicateExpression = null;
 
@@ -218,7 +218,7 @@ namespace GrefQL.Query
             TryApplyArgument<object[]>(resolveFieldContext, OrderByArgumentName, orderBy =>
                 {
                     var firstOrdering = true;
-                    var entityParameterExpression = Expression.Parameter(typeof (TEntity), "entity");
+                    var entityParameterExpression = Expression.Parameter(typeof(TEntity), "entity");
 
                     // ReSharper disable once LoopCanBeConvertedToQuery
                     foreach (Dictionary<string, object> ordering in orderBy)
@@ -242,7 +242,7 @@ namespace GrefQL.Query
 
                         query = (IQueryable<TEntity>)
                             _applyOrderByMethodInfo
-                                .MakeGenericMethod(typeof (TEntity), propertyExpression.Type)
+                                .MakeGenericMethod(typeof(TEntity), propertyExpression.Type)
                                 .Invoke(null, new object[]
                                 {
                                     query,
@@ -260,7 +260,7 @@ namespace GrefQL.Query
         }
 
         public static MethodInfo _applyOrderByMethodInfo
-            = typeof (FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(ApplyOrderBy));
+            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(ApplyOrderBy));
 
         private static IQueryable<TEntity> ApplyOrderBy<TEntity, TKey>(
             IOrderedQueryable<TEntity> query,
@@ -300,7 +300,7 @@ namespace GrefQL.Query
         }
 
         private static readonly MethodInfo _tryAddArgumentFromSource
-            = typeof (FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(TryAddArgumentFromSource));
+            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(TryAddArgumentFromSource));
 
         private static void TryAddArgumentFromSource(
             ResolveFieldContext resolveFieldContext,

@@ -18,7 +18,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
@@ -43,7 +43,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var orderDetailType = context.Model.FindEntityType(typeof (OrderDetail));
+                var orderDetailType = context.Model.FindEntityType(typeof(OrderDetail));
 
                 Assert.NotNull(orderDetailType);
 
@@ -73,14 +73,14 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
                 var fieldResolverFactory = new FieldResolverFactory(new GraphTypeMapper());
 
                 var resolver = fieldResolverFactory.CreateResolveEntityList(customerType);
-                Assert.All(resolver.Arguments, arg => Assert.False(typeof (NonNullGraphType).IsAssignableFrom(arg.Type)));
+                Assert.All(resolver.Arguments, arg => Assert.False(typeof(NonNullGraphType).IsAssignableFrom(arg.Type)));
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
@@ -98,7 +98,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
@@ -123,7 +123,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
@@ -148,8 +148,8 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var orderType = context.Model.FindEntityType(typeof (Order));
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var orderType = context.Model.FindEntityType(typeof(Order));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
                 var orderToCustomer = Assert.Single(orderType.GetNavigations());
                 Assert.Equal(customerType, orderToCustomer.GetTargetType());
 
@@ -168,7 +168,7 @@ namespace GrefQL.Tests
 
                 var resolveFieldContext = new ResolveFieldContext
                 {
-                    RootValue = new QueryExecutionContext {DbContext = context},
+                    RootValue = new QueryExecutionContext { DbContext = context },
                     Source = order,
                     Arguments = new Dictionary<string, object>()
                 };
@@ -183,8 +183,8 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var orderType = context.Model.FindEntityType(typeof (Order));
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var orderType = context.Model.FindEntityType(typeof(Order));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
                 var customerToOrder = Assert.Single(customerType.GetNavigations());
                 Assert.Equal(orderType, customerToOrder.GetTargetType());
 
@@ -203,7 +203,7 @@ namespace GrefQL.Tests
 
                 var ordersContext = new ResolveFieldContext
                 {
-                    RootValue = new QueryExecutionContext {DbContext = context},
+                    RootValue = new QueryExecutionContext { DbContext = context },
                     Source = customer,
                     Arguments = new Dictionary<string, object>()
                 };
@@ -218,7 +218,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
@@ -243,7 +243,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
@@ -276,7 +276,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
@@ -313,7 +313,7 @@ namespace GrefQL.Tests
         {
             using (var context = CreateContext())
             {
-                var customerType = context.Model.FindEntityType(typeof (Customer));
+                var customerType = context.Model.FindEntityType(typeof(Customer));
 
                 Assert.NotNull(customerType);
 
