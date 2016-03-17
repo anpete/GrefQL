@@ -126,16 +126,17 @@ namespace GrefQL.Query
             => Query<TEntity>(resolveFieldContext, entityType)
                 .ToArrayAsync(resolveFieldContext.CancellationToken);
 
-        private static readonly MethodInfo _singleAsyncMethodInfo
-            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(SingleAsync));
+        private static readonly MethodInfo _firstAsyncMethodInfo
+            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(FirstAsync));
 
-        private static Task<TEntity> SingleAsync<TEntity>(
+        private static Task<TEntity> FirstAsync<TEntity>(
             ResolveFieldContext resolveFieldContext, IEntityType entityType)
             where TEntity : class
             => Query<TEntity>(resolveFieldContext, entityType)
-                .SingleAsync(resolveFieldContext.CancellationToken);
+                .FirstAsync(resolveFieldContext.CancellationToken);
 
-        private static IQueryable<TEntity> Query<TEntity>(ResolveFieldContext resolveFieldContext, IEntityType entityType) where TEntity : class
+        private static IQueryable<TEntity> Query<TEntity>(ResolveFieldContext resolveFieldContext, IEntityType entityType)
+            where TEntity : class
         {
             var exectionContext = resolveFieldContext.RootValue as QueryExecutionContext;
 
@@ -148,15 +149,17 @@ namespace GrefQL.Query
 
             // TODO: Probably need a GraphQL->LINQ query cache here.
 
+            query = ApplyFilters(resolveFieldContext, query, entityType);
+            query = ApplyOrderBys(resolveFieldContext, query, entityType);
+            query = ApplyProjection(resolveFieldContext, query, entityType);
+
             TryApplyArgument<int>(resolveFieldContext, OffsetArgumentName, offset => query = query.Skip(offset));
             TryApplyArgument<int>(resolveFieldContext, LimitArgumentName, limit => query = query.Take(limit));
 
-            query = TryApplyFilters(resolveFieldContext, query, entityType);
-            query = TryApplyOrderBy(resolveFieldContext, query, entityType);
             return query;
         }
 
-        private static IQueryable<TEntity> TryApplyFilters<TEntity>(
+        private static IQueryable<TEntity> ApplyFilters<TEntity>(
             ResolveFieldContext resolveFieldContext,
             IQueryable<TEntity> query,
             IEntityType entityType)
@@ -209,7 +212,7 @@ namespace GrefQL.Query
                 .Concat(entityType.GetIndexes().SelectMany(i => i.Properties));
         }
 
-        private static IQueryable<TEntity> TryApplyOrderBy<TEntity>(
+        private static IQueryable<TEntity> ApplyOrderBys<TEntity>(
             ResolveFieldContext resolveFieldContext,
             IQueryable<TEntity> query,
             IEntityType entityType)
@@ -286,6 +289,48 @@ namespace GrefQL.Query
                 : query.ThenByDescending(keySelector);
         }
 
+        private static IQueryable<TEntity> ApplyProjection<TEntity>(
+            ResolveFieldContext resolveFieldContext, IQueryable<TEntity> query, IEntityType entityType)
+        {
+            var selectionSet = resolveFieldContext.FieldAst?.Selections;
+
+            if (selectionSet == null)
+            {
+                return query;
+            }
+
+            var entityClrType = typeof(TEntity);
+            var entityTypeInfo = entityClrType.GetTypeInfo();
+            var entityParameterExpression = Expression.Parameter(entityClrType, "entity");
+            var memberAssignments = new List<MemberAssignment>();
+
+            foreach (var selection in selectionSet)
+            {
+                var property = entityType.FindProperty(selection.Field.Name.ToPascalCase());
+
+                if (property != null)
+                {
+                    memberAssignments.Add(
+                        Expression.Bind(
+                            entityTypeInfo.GetProperty(property.Name),
+                            Expression.Call(
+                                null,
+                                _efPropertyMethodInfo.MakeGenericMethod(property.ClrType),
+                                entityParameterExpression,
+                                Expression.Constant(property.Name))));
+                }
+            }
+
+            var selector
+                = Expression.Lambda<Func<TEntity, TEntity>>(
+                    Expression.MemberInit(
+                        Expression.New(entityClrType),
+                        memberAssignments),
+                    entityParameterExpression);
+
+            return query.Select(selector);
+        }
+
         private static void TryApplyArgument<TArgument>(
             ResolveFieldContext resolveFieldContext,
             string argument,
@@ -346,7 +391,7 @@ namespace GrefQL.Query
 
             var method = navigation.IsCollection()
                 ? _toArrayAsyncMethodInfo
-                : _singleAsyncMethodInfo;
+                : _firstAsyncMethodInfo;
 
             Expression queryEntitiesCallExpression
                 = Expression.Call(

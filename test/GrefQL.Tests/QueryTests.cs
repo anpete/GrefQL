@@ -172,7 +172,7 @@ namespace GrefQL.Tests
         }
 
 
-        [Fact]
+        [Fact(Skip = "https://github.com/anpete/GrefQL/issues/12")]
         public void Query_orders_with_customer()
         {
             const string query = @"
@@ -180,7 +180,7 @@ namespace GrefQL.Tests
                    orders(limit: 2) {
                       orderId
                       customer {
-                          customerName
+                          customerId
                           contactName
                       }
                    }

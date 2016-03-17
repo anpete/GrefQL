@@ -1,10 +1,50 @@
 ﻿using System.Linq;
+using GraphQL;
+using GraphQL.Http;
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace GrefQL.Tests.Model.Northwind
 {
     // Sandbox for testing GraphQL.NET APIs
+    public class Sandbox : NorthwindTestsBase
+    {
+        [Fact]
+        public void Query_sandbox()
+        {
+            const string query = @"
+                {
+                  customers(limit: 10) {
+                    customerId
+                    companyName
+                    contactName
+                  }
+                }";
+
+            using (var data = CreateContext())
+            {
+                var schema = new NorthwindGraph();
+                var documentExecutor = new DocumentExecuter();
+
+                var result = documentExecutor.ExecuteAsync(schema, data, query, null).Result;
+
+                Assert.Null(result.Errors);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
+        public Sandbox(NorthwindFixture northwindFixture, ITestOutputHelper testOutputHelper)
+            : base(northwindFixture)
+        {
+            SetTestOutputHelper(testOutputHelper);
+        }
+    }
 
     public class NorthwindGraph : GraphQL.Types.Schema
     {

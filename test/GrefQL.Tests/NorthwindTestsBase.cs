@@ -22,6 +22,6 @@ namespace GrefQL.Tests
 
         protected NorthwindContext CreateContext() => _northwindFixture.CreateContext();
 
-        protected void WriteLine(object s = null) => _testOutputHelper.WriteLine(s?.ToString() ?? "");
+        protected void WriteLine(object s = null) => _testOutputHelper?.WriteLine(s?.ToString() ?? "");
     }
 }
