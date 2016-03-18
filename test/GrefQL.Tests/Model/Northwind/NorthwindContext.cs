@@ -17,6 +17,7 @@ namespace GrefQL.Tests.Model.Northwind
                         e.ToTable("Customers");
                         e.HasIndex(c => c.ContactTitle);
                         e.HasIndex(c => c.City);
+                        e.HasIndex(c => c.ContactName);
                     });
 
             modelBuilder

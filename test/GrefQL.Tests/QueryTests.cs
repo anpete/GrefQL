@@ -11,6 +11,33 @@ namespace GrefQL.Tests
     public class QueryTests : NorthwindTestsBase
     {
         [Fact]
+        public void Query_with_variable()
+        {
+            const string query = @"
+                query CustomerQuery($name: String!) {
+                  customers(contactName: $name) {
+                    customerId
+                    contactName
+                  }
+                }";
+
+            using (var context = CreateContext())
+            {
+                var variables = new Dictionary<string, object> { ["name"] = "Ana Trujillo" };
+
+                var result = context.ExecuteGraphQLQuery(query, variables);
+
+                Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
+        [Fact]
         public void Query_customers_by_id()
         {
             const string query = @"
@@ -157,7 +184,7 @@ namespace GrefQL.Tests
                 WriteLine(jsonResult);
             }
         }
-        
+
         [Fact]
         public void Query_customers_by_company_name_and_city()
         {
@@ -183,7 +210,6 @@ namespace GrefQL.Tests
                 WriteLine(jsonResult);
             }
         }
-
 
         [Fact]
         public void Query_customer_with_orders()
@@ -214,7 +240,6 @@ namespace GrefQL.Tests
                 WriteLine(jsonResult);
             }
         }
-
 
         [Fact]
         public void Query_orders_with_customer()
