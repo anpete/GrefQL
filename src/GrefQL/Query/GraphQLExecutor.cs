@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Types;
@@ -17,7 +18,7 @@ namespace GrefQL.Query
             _executor = executor;
         }
 
-        public Task<ExecutionResult> ExecuteAsync(DbContext context, string query, string variables = null, string operationName = null, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<ExecutionResult> ExecuteAsync(DbContext context, string query, IDictionary<string, object> variables = null, string operationName = null, CancellationToken cancellationToken = default(CancellationToken))
             => _executor.ExecuteAsync(
                 schema: _schema,
                 root: new QueryExecutionContext
@@ -26,9 +27,9 @@ namespace GrefQL.Query
                 },
                 query: query,
                 operationName: operationName,
-                inputs: string.IsNullOrEmpty(variables)
+                inputs: variables == null
                     ? null
-                    : variables.ToInputs(),
+                    : new Inputs(variables),
                 cancellationToken: cancellationToken);
     }
 }

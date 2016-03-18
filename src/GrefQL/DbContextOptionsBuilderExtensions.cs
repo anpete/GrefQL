@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GrefQL;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace GrefQL
+namespace Microsoft.EntityFrameworkCore
 {
     public static class DbContextOptionsBuilderExtensions
     {
