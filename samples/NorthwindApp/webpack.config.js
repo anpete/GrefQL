@@ -1,14 +1,15 @@
-﻿var output = './wwwroot/';
-
+﻿var path = require('path');
+var context =  path.resolve(__dirname, 'wwwroot');
 module.exports = {
     devtool: 'source-map',
+    context: path.resolve(__dirname, 'wwwroot'),
     entry: {
-        'bundle': './js/app.jsx'
+        'bundle': context + '/js/app.jsx'
     },
-
     output: {
-        path: output,
-        filename: '[name].js'
+        path: context,
+        filename: '[name].js',
+        publicPath: '/'
     },
 
     module: {

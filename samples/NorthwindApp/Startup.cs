@@ -1,8 +1,10 @@
-﻿using GrefQL.Tests.Model.Northwind;
+﻿using System;
+using GrefQL.Tests.Model.Northwind;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
 namespace GrefQL.WebTests
@@ -24,7 +26,18 @@ namespace GrefQL.WebTests
         {
             loggerFactory.AddConsole(LogLevel.Information);
 
-            app.UseFileServer();
+            if (Environment.GetEnvironmentVariable("WATCH_WWWROOT") != null)
+            {
+                app.UseFileServer(new FileServerOptions
+                {
+                    FileProvider = new PhysicalFileProvider(Environment.GetEnvironmentVariable("WATCH_WWWROOT"))
+                });
+            }
+            else
+            {
+                app.UseFileServer();
+            }
+
             app.UseMvcWithDefaultRoute();
         }
 

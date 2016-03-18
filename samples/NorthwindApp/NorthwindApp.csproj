@@ -457,8 +457,10 @@
     <Compile Include="Controllers\GraphController.cs" />
     <Compile Include="Startup.cs" />
     <None Include="app.config" />
-    <None Include="js\NorthwindApp.jsx" />
     <None Include="packages.config" />
+    <Content Include="wwwroot\app.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="wwwroot\bundle.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -467,7 +469,8 @@
     </Content>
     <None Include="package.json" />
     <Content Include="webpack.config.js" />
-    <None Include="js\app.jsx" />
+    <None Include="wwwroot\js\app.jsx" />
+    <None Include="wwwroot\js\NorthwindApp.jsx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
