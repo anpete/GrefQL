@@ -331,21 +331,21 @@ namespace GrefQL.Query
             var entityParameterExpression = Expression.Parameter(entityClrType, "entity");
             var memberAssignments = new List<MemberAssignment>();
 
-            foreach (var selection in selectionSet)
+            foreach (var property 
+                in selectionSet
+                    .Select(s => entityType.FindProperty(s.Field.Name.ToPascalCase()))
+                    .Where(p => p != null)
+                    .Union(entityType.GetKeys().SelectMany(k => k.Properties))
+                    .Union(entityType.GetForeignKeys().SelectMany(fk => fk.Properties)))
             {
-                var property = entityType.FindProperty(selection.Field.Name.ToPascalCase());
-
-                if (property != null)
-                {
-                    memberAssignments.Add(
-                        Expression.Bind(
-                            entityTypeInfo.GetProperty(property.Name),
-                            Expression.Call(
-                                null,
-                                _efPropertyMethodInfo.MakeGenericMethod(property.ClrType),
-                                entityParameterExpression,
-                                Expression.Constant(property.Name))));
-                }
+                memberAssignments.Add(
+                    Expression.Bind(
+                        entityTypeInfo.GetProperty(property.Name),
+                        Expression.Call(
+                            null,
+                            _efPropertyMethodInfo.MakeGenericMethod(property.ClrType),
+                            entityParameterExpression,
+                            Expression.Constant(property.Name))));
             }
 
             var selector

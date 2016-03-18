@@ -179,9 +179,7 @@ namespace GrefQL.Tests
                 {
                    orders(limit: 2) {
                       orderId
-                      customerId
                       customer {
-                          customerId
                           contactName
                       }
                    }

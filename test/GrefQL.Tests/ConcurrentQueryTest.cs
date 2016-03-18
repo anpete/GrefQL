@@ -18,7 +18,6 @@ namespace GrefQL.Tests
                 phone
                 orders {
                   orderId
-                  customerId
                   customer {
                     customerId
                   }
