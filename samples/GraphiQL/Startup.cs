@@ -1,5 +1,6 @@
 ﻿using GrefQL.Tests.Model.Northwind;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,18 @@ namespace GrefQL.WebTests
 
             app.UseFileServer();
             app.UseMvcWithDefaultRoute();
+        }
+
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseDefaultConfiguration(args)
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseUrls("http://localhost:5000")
+                .UseStartup<Startup>()
+                .Build();
+
+            host.Run();
         }
     }
 }

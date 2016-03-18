@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -18,7 +19,18 @@ namespace Microsoft.EntityFrameworkCore
         public static ExecutionResult ExecuteGraphQLQuery(this DbContext context, string query, string variables = null, string operationName = null)
             => context.ExecuteGraphQLQueryAsync(query, variables, operationName).GetAwaiter().GetResult();
 
+        public static ExecutionResult ExecuteGraphQLQuery(this DbContext context, string query, IDictionary<string, object> variables, string operationName = null)
+            => context.ExecuteGraphQLQueryAsync(query, variables, operationName).GetAwaiter().GetResult();
+
         public static Task<ExecutionResult> ExecuteGraphQLQueryAsync(this DbContext context, string query, string variables = null, string operationName = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var inputs = string.IsNullOrEmpty(variables)
+                ? null
+                : variables.ToInputs();
+            return context.ExecuteGraphQLQueryAsync(query, inputs, operationName, cancellationToken);
+        }
+
+        public static Task<ExecutionResult> ExecuteGraphQLQueryAsync(this DbContext context, string query, IDictionary<string, object> variables, string operationName = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var exectutor = context.GetInfrastructure().GetService<GraphQLExecutor>();
             if (exectutor == null)
