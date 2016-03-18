@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -120,20 +121,46 @@ namespace GrefQL.Query
         private static readonly MethodInfo _toArrayAsyncMethodInfo
             = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(ToArrayAsync));
 
-        private static Task<TEntity[]> ToArrayAsync<TEntity>(
+        private static async Task<TEntity[]> ToArrayAsync<TEntity>(
             ResolveFieldContext resolveFieldContext, IEntityType entityType)
             where TEntity : class
-            => Query<TEntity>(resolveFieldContext, entityType)
-                .ToArrayAsync(resolveFieldContext.CancellationToken);
+        {
+            var contextSemaphore = ((QueryExecutionContext)resolveFieldContext.RootValue).ContextSemaphore;
+
+            await contextSemaphore.WaitAsync(resolveFieldContext.CancellationToken);
+
+            try
+            {
+                return await Query<TEntity>(resolveFieldContext, entityType)
+                    .ToArrayAsync(resolveFieldContext.CancellationToken);
+            }
+            finally
+            {
+                contextSemaphore.Release();
+            }
+        }
 
         private static readonly MethodInfo _firstAsyncMethodInfo
             = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(FirstAsync));
 
-        private static Task<TEntity> FirstAsync<TEntity>(
+        private static async Task<TEntity> FirstAsync<TEntity>(
             ResolveFieldContext resolveFieldContext, IEntityType entityType)
             where TEntity : class
-            => Query<TEntity>(resolveFieldContext, entityType)
-                .FirstAsync(resolveFieldContext.CancellationToken);
+        {
+            var contextSemaphore = ((QueryExecutionContext)resolveFieldContext.RootValue).ContextSemaphore;
+
+            await contextSemaphore.WaitAsync(resolveFieldContext.CancellationToken);
+
+            try
+            {
+                return await Query<TEntity>(resolveFieldContext, entityType)
+                    .FirstAsync(resolveFieldContext.CancellationToken);
+            }
+            finally
+            {
+                contextSemaphore.Release();
+            }
+        }
 
         private static IQueryable<TEntity> Query<TEntity>(ResolveFieldContext resolveFieldContext, IEntityType entityType)
             where TEntity : class
@@ -208,8 +235,8 @@ namespace GrefQL.Query
         private static IEnumerable<IProperty> GetFilterableProperties(IEntityType entityType)
         {
             return entityType.GetKeys().SelectMany(i => i.Properties)
-                .Concat(entityType.GetForeignKeys().SelectMany(i => i.Properties))
-                .Concat(entityType.GetIndexes().SelectMany(i => i.Properties));
+                .Union(entityType.GetForeignKeys().SelectMany(i => i.Properties))
+                .Union(entityType.GetIndexes().SelectMany(i => i.Properties));
         }
 
         private static IQueryable<TEntity> ApplyOrderBys<TEntity>(
@@ -358,6 +385,9 @@ namespace GrefQL.Query
             }
 
             var value = getter.GetClrValue(resolveFieldContext.Source);
+
+            Debug.Assert(value != null);
+
             resolveFieldContext.Arguments[argument] = value;
         }
 

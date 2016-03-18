@@ -152,7 +152,7 @@ namespace GrefQL.Tests
                     contactName
                     orders {
                         orderId
-                        orderDate   
+                        orderDate
                     }
                   }
                 }";
@@ -172,7 +172,7 @@ namespace GrefQL.Tests
         }
 
 
-        [Fact(Skip = "https://github.com/anpete/GrefQL/issues/12")]
+        [Fact]
         public void Query_orders_with_customer()
         {
             const string query = @"
