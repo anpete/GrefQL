@@ -37,6 +37,50 @@ namespace GrefQL.Tests
         }
 
         [Fact]
+        public void Query_customers_count()
+        {
+            const string query = @"
+                query Customer {
+                  customersCount
+                }";
+
+            using (var context = CreateContext())
+            {
+                var result = context.ExecuteGraphQLQuery(query);
+
+                Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
+        [Fact]
+        public void Query_customers_count_with_predicate()
+        {
+            const string query = @"
+                query Customer {
+                  customersCount(city: ""London"")
+                }";
+
+            using (var context = CreateContext())
+            {
+                var result = context.ExecuteGraphQLQuery(query);
+
+                Assert.Null(result.Errors);
+                Assert.NotNull(result.Data);
+
+                var jsonResult = new DocumentWriter().Write(result);
+
+                WriteLine();
+                WriteLine(jsonResult);
+            }
+        }
+
+        [Fact]
         public void Query_customers_with_limit()
         {
             const string query = @"

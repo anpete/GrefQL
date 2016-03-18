@@ -85,6 +85,62 @@ namespace GrefQL.Query
             }
         }
 
+        public FieldResolver CreateResolveEntityCount(IEntityType entityType)
+        {
+            var countAsyncCallExpression
+                = Expression.Call(
+                    _countAsyncMethodInfo.MakeGenericMethod(entityType.ClrType),
+                    _resolveFieldContextParameterExpression,
+                    Expression.Constant(entityType));
+
+            var resolveLambdaExpression
+                = Expression
+                    .Lambda<Func<ResolveFieldContext, object>>(
+                        countAsyncCallExpression,
+                        _resolveFieldContextParameterExpression);
+
+            var queryArguments = new List<QueryArgument>();
+
+            AddFilterQueryArguments(entityType, queryArguments);
+
+            return new FieldResolver
+            {
+                Resolve = resolveLambdaExpression.Compile(),
+                Arguments = new QueryArguments(queryArguments)
+            };
+        }
+
+        private static readonly MethodInfo _countAsyncMethodInfo
+            = typeof(FieldResolverFactory).GetTypeInfo().GetDeclaredMethod(nameof(CountAsync));
+
+        private static async Task<int> CountAsync<TEntity>(
+            ResolveFieldContext resolveFieldContext, IEntityType entityType)
+            where TEntity : class
+        {
+            var queryExecutionContext = (QueryExecutionContext)resolveFieldContext.RootValue;
+            var contextSemaphore = queryExecutionContext.ContextSemaphore;
+
+            await contextSemaphore.WaitAsync(resolveFieldContext.CancellationToken);
+
+            try
+            {
+                if (queryExecutionContext.DbContext == null)
+                {
+                    throw new InvalidOperationException("Cannot find dbContext in current field context");
+                }
+
+                IQueryable<TEntity> query = queryExecutionContext.DbContext.Set<TEntity>();
+
+                query = ApplyFilters(resolveFieldContext, query, entityType);
+                
+                return await query.CountAsync();
+            }
+            finally
+            {
+                contextSemaphore.Release();
+            }
+        }
+
         public FieldResolver CreateResolveEntityList(IEntityType entityType)
         {
             var queryEntitiesAsyncCallExpression
@@ -101,6 +157,17 @@ namespace GrefQL.Query
 
             var queryArguments = _listArguments.ToList();
 
+            AddFilterQueryArguments(entityType, queryArguments);
+
+            return new FieldResolver
+            {
+                Resolve = resolveLambdaExpression.Compile(),
+                Arguments = new QueryArguments(queryArguments)
+            };
+        }
+
+        private void AddFilterQueryArguments(IEntityType entityType, ICollection<QueryArgument> queryArguments)
+        {
             foreach (var property in GetFilterableProperties(entityType))
             {
                 queryArguments.Add(
@@ -110,12 +177,6 @@ namespace GrefQL.Query
                         Description = property.GraphQL().Description
                     });
             }
-
-            return new FieldResolver
-            {
-                Resolve = resolveLambdaExpression.Compile(),
-                Arguments = new QueryArguments(queryArguments)
-            };
         }
 
         private static readonly MethodInfo _toArrayAsyncMethodInfo

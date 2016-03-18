@@ -62,6 +62,13 @@ namespace GrefQL.Tests
                         Assert.Equal(typeof(ListGraphType<ObjectGraphType<Customer>>), list.Type);
                         Assert.NotEmpty(list.Arguments);
                         Assert.NotNull(list.Resolve);
+                    },
+                list =>
+                    {
+                        Assert.Equal("customersCount", list.Name);
+                        Assert.Equal(typeof(IntGraphType), list.Type);
+                        //Assert.NotEmpty(list.Arguments);
+                        Assert.NotNull(list.Resolve);
                     });
         }
 

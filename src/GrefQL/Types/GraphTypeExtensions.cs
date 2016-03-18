@@ -8,7 +8,7 @@ namespace GrefQL.Types
 {
     public static class GraphTypeExtensions
     {
-        public static void AddField<TGraphType>(this GraphType root, string name, string description, FieldResolver resolver = null)
+        public static FieldType AddField<TGraphType>(this GraphType root, string name, string description, FieldResolver resolver = null)
             where TGraphType : GraphType
             => root.Field<TGraphType>(
                 name: name,
