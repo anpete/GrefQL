@@ -36,3 +36,4 @@ config.test.json
 *.DotSettings
 node_modules/
 /**/wwwroot/bundle.js
+*.js.map
